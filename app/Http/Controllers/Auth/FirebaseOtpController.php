@@ -10,6 +10,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class FirebaseOtpController extends Controller
 {
@@ -20,8 +22,9 @@ class FirebaseOtpController extends Controller
 
     public function verifyPhone(Request $request, FirebaseTokenVerifier $verifier): JsonResponse
     {
+        $this->abortIfDisabled();
         $data = $request->validate([
-            'id_token' => ['required', 'string'],
+            'id_token' => ['required', 'string', 'min:20'],
         ]);
         $verified = $this->attemptVerification($verifier, $data['id_token']);
 
@@ -41,13 +44,23 @@ class FirebaseOtpController extends Controller
 
     public function attachPhoneToUser(Request $request, FirebaseTokenVerifier $verifier): JsonResponse
     {
+        $this->abortIfDisabled();
         $data = $request->validate([
-            'id_token' => ['required', 'string'],
+            'id_token' => ['required', 'string', 'min:20'],
         ]);
         $verified = $this->attemptVerification($verifier, $data['id_token']);
 
         /** @var User $user */
         $user = $request->user();
+        $conflict = User::where('id', '!=', $user->id)->where('phone', $verified['phone'])->exists();
+        if ($conflict) {
+            throw new HttpResponseException(
+                response()->json([
+                    'message' => translate('This phone number is already used by another account.'),
+                ], 409)
+            );
+        }
+
         $user->forceFill([
             'phone' => $verified['phone'],
             'firebase_uid' => $verified['uid'],
@@ -69,6 +82,12 @@ class FirebaseOtpController extends Controller
             throw new \InvalidArgumentException('No phone number found in Firebase token.');
         }
 
+        if (!$this->isValidE164($verified['phone'])) {
+            throw ValidationException::withMessages([
+                'phone' => translate('Phone number in token is not a valid E.164 number.'),
+            ]);
+        }
+
         return $verified;
     }
 
@@ -77,6 +96,9 @@ class FirebaseOtpController extends Controller
         try {
             return $this->validateToken($verifier, $idToken);
         } catch (\Throwable $e) {
+            Log::warning('Firebase OTP verification failed', [
+                'error' => $e->getMessage(),
+            ]);
             throw new HttpResponseException(
                 response()->json([
                     'message' => translate('Invalid or expired Firebase ID token.'),
@@ -84,5 +106,26 @@ class FirebaseOtpController extends Controller
                 ], 422)
             );
         }
+    }
+
+    private function abortIfDisabled(): void
+    {
+        if (!$this->firebaseOtpEnabled()) {
+            throw new HttpResponseException(
+                response()->json([
+                    'message' => translate('Firebase phone verification is disabled.'),
+                ], 403)
+            );
+        }
+    }
+
+    private function firebaseOtpEnabled(): bool
+    {
+        return (bool) (get_setting('firebase_otp_enabled') == 1 && env('FIREBASE_OTP_ENABLED', false));
+    }
+
+    private function isValidE164(string $phone): bool
+    {
+        return preg_match('/^\+[1-9]\d{6,14}$/', $phone) === 1;
     }
 }

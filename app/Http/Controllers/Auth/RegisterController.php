@@ -17,6 +17,7 @@ use Illuminate\Foundation\Auth\RegistersUsers;
 use App\Http\Controllers\OTPVerificationController;
 use App\Utility\EmailUtility;
 use App\Services\FirebaseTokenVerifier;
+use Illuminate\Validation\ValidationException;
 
 class RegisterController extends Controller
 {
@@ -70,9 +71,21 @@ class RegisterController extends Controller
             $rules['phone'] = ['required', 'string'];
             $rules['firebase_id_token'] = ['required', 'string'];
             $rules['firebase_verified_phone'] = ['required', 'string'];
+        } else {
+            $rules['phone'] = ['sometimes', 'string'];
         }
 
-        return Validator::make($data, $rules);
+        $validator = Validator::make($data, $rules);
+        $validator->after(function ($validator) use ($data) {
+            if (!empty($data['phone'])) {
+                $normalized = $this->normalizePhone($data['phone'] ?? null, $data['country_code'] ?? null);
+                if (!$normalized) {
+                    $validator->errors()->add('phone', translate('Please enter a valid phone number in E.164 format (e.g. +15551234567).'));
+                }
+            }
+        });
+
+        return $validator;
     }
 
     /**
@@ -87,6 +100,7 @@ class RegisterController extends Controller
         $verifiedPhone = $data['firebase_verified_phone'] ?? session('firebase_verified_phone');
         $firebaseUid = $data['firebase_uid'] ?? session('firebase_uid');
         $isFirebaseVerified = !empty($data['firebase_id_token']);
+        $normalizedPhone = $verifiedPhone ?: ($data['normalized_phone'] ?? $this->normalizePhone($data['phone'] ?? null, $data['country_code'] ?? null));
 
         if (isset($data['email']) && filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
             $user = User::create([
@@ -102,7 +116,7 @@ class RegisterController extends Controller
                 $cleanPhone = preg_replace('/\D+/', '', $data['phone']);
                 $user = User::create([
                     'name' => $data['name'],
-                    'phone' => $verifiedPhone ?: '+'.$data['country_code'].$cleanPhone,
+                    'phone' => $normalizedPhone ?: '+'.$data['country_code'].$cleanPhone,
                     'password' => Hash::make($data['password']),
                     'verification_code' => rand(100000, 999999),
                     'firebase_uid' => $firebaseUid,
@@ -148,6 +162,10 @@ class RegisterController extends Controller
     public function register(Request $request)
     {
         $this->syncFirebaseVerification($request);
+        $normalizedPhone = $this->normalizePhone($request->input('phone'), $request->input('country_code'));
+        if ($normalizedPhone) {
+            $request->merge(['normalized_phone' => $normalizedPhone]);
+        }
 
         if (filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
             if(User::where('email', $request->email)->first() != null){
@@ -159,7 +177,7 @@ class RegisterController extends Controller
                 
             }
         }
-        elseif (User::where('phone', '+'.$request->country_code.$request->phone)->first() != null) {
+        elseif ($normalizedPhone && User::where('phone', $normalizedPhone)->first() != null) {
             flash(translate('Phone already exists.'));
             if (get_setting('customer_registration_verify') == 1){
                 return route('registration.verification');
@@ -242,10 +260,23 @@ class RegisterController extends Controller
         }
 
         if ($token) {
-            $verified = app(FirebaseTokenVerifier::class)->verify($token);
+            try {
+                $verified = app(FirebaseTokenVerifier::class)->verify($token);
+            } catch (\Throwable $e) {
+                throw ValidationException::withMessages([
+                    'phone' => translate('Phone verification via Firebase failed. Please try again.'),
+                ]);
+            }
+            $normalizedRequestPhone = $this->normalizePhone($request->input('phone'), $request->input('country_code'));
+            if ($normalizedRequestPhone && $verified['phone'] !== $normalizedRequestPhone) {
+                throw ValidationException::withMessages([
+                    'phone' => translate('The verified phone number does not match the number you entered.'),
+                ]);
+            }
             $request->merge([
                 'firebase_verified_phone' => $verified['phone'],
                 'firebase_uid' => $verified['uid'],
+                'normalized_phone' => $verified['phone'],
             ]);
             session([
                 'firebase_verified_phone' => $verified['phone'],
@@ -262,5 +293,25 @@ class RegisterController extends Controller
     private function firebaseOtpRegistrationRequired(): bool
     {
         return $this->firebaseOtpEnabled() && get_setting('firebase_otp_require_registration') == 1;
+    }
+
+    private function normalizePhone(?string $phone, ?string $countryCode): ?string
+    {
+        $digits = preg_replace('/\D+/', '', (string) $phone);
+        $country = preg_replace('/\D+/', '', (string) $countryCode);
+
+        if (empty($digits)) {
+            return null;
+        }
+
+        if (strpos((string) $phone, '+') === 0) {
+            $normalized = '+' . $digits;
+        } elseif (!empty($country)) {
+            $normalized = '+' . $country . $digits;
+        } else {
+            $normalized = '+' . $digits;
+        }
+
+        return preg_match('/^\+[1-9]\d{6,14}$/', $normalized) ? $normalized : null;
     }
 }

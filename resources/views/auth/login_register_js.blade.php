@@ -157,6 +157,11 @@
         const configMissing = !firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId;
         if (configMissing) {
             console.warn('Firebase OTP config is incomplete.');
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.js-send-firebase-otp, .js-verify-firebase-otp').forEach((btn) => {
+                    btn.setAttribute('disabled', 'disabled');
+                });
+            });
         }
 
         if (!configMissing) {
@@ -168,14 +173,58 @@
                 confirmation: null,
                 lastSentAt: 0,
                 cooldown: 60,
+                isVerifying: false,
             };
+
+            const E164_PATTERN = /^\+[1-9]\d{6,14}$/;
+
+            const notifyError = (message) => AIZ.plugins.notify('danger', message);
+            const notifySuccess = (message) => AIZ.plugins.notify('success', message);
+            const emitOtpEvent = (name, detail = {}) => document.dispatchEvent(new CustomEvent(name, { detail }));
 
             function recaptcha() {
                 if (window.firebaseRecaptcha) return window.firebaseRecaptcha;
                 window.firebaseRecaptcha = new RecaptchaVerifier(firebaseAuth, 'firebase-recaptcha-container', {
                     size: 'invisible',
+                    callback: () => {},
+                    'expired-callback': () => {
+                        emitOtpEvent('firebase-otp-reset', {});
+                    },
                 });
                 return window.firebaseRecaptcha;
+            }
+
+            function resetRecaptcha() {
+                if (window.firebaseRecaptcha && typeof window.firebaseRecaptcha.clear === 'function') {
+                    window.firebaseRecaptcha.clear();
+                    window.firebaseRecaptcha = null;
+                }
+            }
+
+            function normalizePhone(raw, countryCode = '') {
+                const digits = (raw || '').replace(/\D/g, '');
+                const cc = (countryCode || '').replace(/\D/g, '');
+                if (!digits) return '';
+                if ((raw || '').trim().startsWith('+')) {
+                    return `+${digits}`;
+                }
+                if (cc) {
+                    return `+${cc}${digits}`;
+                }
+                return `+${digits}`;
+            }
+
+            function mapFirebaseError(error) {
+                const code = (error && error.code) ? error.code : '';
+                const messages = {
+                    'auth/invalid-phone-number': '{{ translate('Please enter a valid phone number in E.164 format (e.g. +15551234567).') }}',
+                    'auth/missing-phone-number': '{{ translate('Phone number is required to send OTP.') }}',
+                    'auth/too-many-requests': '{{ translate('Too many OTP attempts. Please wait and try again.') }}',
+                    'auth/captcha-check-failed': '{{ translate('reCAPTCHA check failed. Please retry.') }}',
+                    'auth/invalid-verification-code': '{{ translate('Invalid verification code. Please try again.') }}',
+                    'auth/code-expired': '{{ translate('The verification code has expired. Please request a new OTP.') }}',
+                };
+                return messages[code] || '{{ translate('Unable to verify phone number. Please try again.') }}';
             }
 
             async function sendFirebaseOtp(phone, triggerBtn) {
@@ -184,28 +233,53 @@
                     AIZ.plugins.notify('info', '{{ translate('Please wait before requesting another OTP.') }}');
                     return;
                 }
+                if (!E164_PATTERN.test(phone)) {
+                    notifyError('{{ translate('Please enter a valid phone number in E.164 format (e.g. +15551234567).') }}');
+                    return;
+                }
                 try {
-                    triggerBtn?.setAttribute('disabled', 'disabled');
+                    if (triggerBtn) {
+                        triggerBtn.setAttribute('disabled', 'disabled');
+                        triggerBtn.classList.add('disabled');
+                        triggerBtn.setAttribute('data-original-text', triggerBtn.innerHTML || '');
+                        triggerBtn.innerHTML = '{{ translate('Sending...') }}';
+                    }
+                    resetRecaptcha();
                     firebaseOtpState.confirmation = await signInWithPhoneNumber(firebaseAuth, phone, recaptcha());
                     firebaseOtpState.lastSentAt = now;
-                    AIZ.plugins.notify('success', '{{ translate('OTP sent successfully.') }}');
+                    notifySuccess('{{ translate('OTP sent successfully.') }}');
+                    emitOtpEvent('firebase-otp-sent', { phone });
                 } catch (error) {
                     console.error(error);
-                    AIZ.plugins.notify('danger', '{{ translate('Unable to send OTP. Please check the phone number.') }}');
+                    notifyError(mapFirebaseError(error));
+                    emitOtpEvent('firebase-otp-reset', { reason: 'send_failed' });
                 } finally {
-                    triggerBtn?.removeAttribute('disabled');
+                    if (triggerBtn) {
+                        const original = triggerBtn.getAttribute('data-original-text');
+                        triggerBtn.innerHTML = original || triggerBtn.innerHTML;
+                        triggerBtn.removeAttribute('disabled');
+                        triggerBtn.classList.remove('disabled');
+                    }
                 }
             }
 
             async function verifyFirebaseOtp(code, formEl, otpInput) {
                 if (!firebaseOtpState.confirmation) {
-                    AIZ.plugins.notify('danger', '{{ translate('Please request an OTP first.') }}');
+                    notifyError('{{ translate('Please request an OTP first.') }}');
+                    emitOtpEvent('firebase-otp-reset', { reason: 'missing_confirmation' });
+                    return;
+                }
+                if (!code || code.trim().length < 6) {
+                    notifyError('{{ translate('Enter the 6-digit verification code sent to your phone.') }}');
                     return;
                 }
                 try {
-                    otpInput?.setAttribute('disabled', 'disabled');
-                    const result = await firebaseOtpState.confirmation.confirm(code);
-                    const idToken = await result.user.getIdToken();
+                    firebaseOtpState.isVerifying = true;
+                    if (otpInput) {
+                        otpInput.setAttribute('disabled', 'disabled');
+                    }
+                    const result = await firebaseOtpState.confirmation.confirm(code.trim());
+                    const idToken = await result.user.getIdToken(true);
                     const payload = new URLSearchParams({
                         id_token: idToken,
                         _token: AIZ.data.csrf,
@@ -231,12 +305,23 @@
                     formEl.querySelectorAll('[name="firebase_uid"]').forEach((input) => input.value = data.firebase_uid);
 
                     formEl.querySelectorAll('.js-requires-otp').forEach((btn) => btn.removeAttribute('disabled'));
-                    AIZ.plugins.notify('success', '{{ translate('Phone verified. You can continue.') }}');
+                    notifySuccess('{{ translate('Phone verified. You can continue.') }}');
+                    emitOtpEvent('firebase-otp-verified', {
+                        formId: formEl.id || null,
+                        phone: data.phone,
+                        firebase_uid: data.firebase_uid,
+                    });
                 } catch (error) {
                     console.error(error);
-                    AIZ.plugins.notify('danger', '{{ translate('Invalid OTP. Please try again.') }}');
+                    notifyError(mapFirebaseError(error));
+                    firebaseOtpState.confirmation = null;
+                    emitOtpEvent('firebase-otp-reset', { reason: 'verify_failed' });
                 } finally {
-                    otpInput?.removeAttribute('disabled');
+                    firebaseOtpState.isVerifying = false;
+                    if (otpInput) {
+                        otpInput.removeAttribute('disabled');
+                    }
+                    resetRecaptcha();
                 }
             }
 
@@ -245,21 +330,30 @@
                 if (sendBtn) {
                     const formSelector = sendBtn.getAttribute('data-target-form');
                     const phoneSelector = sendBtn.getAttribute('data-phone-input');
+                    const countrySelector = sendBtn.getAttribute('data-country-input');
                     const otpWrapperSelector = sendBtn.getAttribute('data-otp-wrapper');
                     const form = document.querySelector(formSelector);
                     const phoneInput = document.querySelector(phoneSelector);
+                    const countryInput = countrySelector ? document.querySelector(countrySelector) : null;
                     if (!form || !phoneInput) return;
 
                     const raw = phoneInput.value || '';
+                    const normalized = normalizePhone(raw, countryInput ? countryInput.value : '');
                     if (!raw.trim()) {
                         AIZ.plugins.notify('danger', '{{ translate('Enter a valid phone number before requesting OTP.') }}');
                         return;
                     }
-                    const normalized = raw.startsWith('+') ? raw : `+${raw}`;
+                    if (!E164_PATTERN.test(normalized)) {
+                        notifyError('{{ translate('Please enter a valid phone number in E.164 format (e.g. +15551234567).') }}');
+                        return;
+                    }
                     sendFirebaseOtp(normalized, sendBtn).then(() => {
                         if (otpWrapperSelector) {
                             const otpWrapper = document.querySelector(otpWrapperSelector);
-                            otpWrapper?.classList.remove('d-none');
+                            if (otpWrapper) {
+                                otpWrapper.classList.remove('d-none');
+                            }
+                            emitOtpEvent('firebase-otp-prompt', { formId: form ? form.id : null });
                         }
                     });
                 }
@@ -271,7 +365,13 @@
                     const form = document.querySelector(formSelector);
                     const otpInput = document.querySelector(otpSelector);
                     if (!form || !otpInput) return;
+                    verifyBtn.setAttribute('disabled', 'disabled');
+                    verifyBtn.classList.add('disabled');
                     verifyFirebaseOtp(otpInput.value, form, otpInput);
+                    setTimeout(() => {
+                        verifyBtn.removeAttribute('disabled');
+                        verifyBtn.classList.remove('disabled');
+                    }, 400);
                 }
             });
         }
