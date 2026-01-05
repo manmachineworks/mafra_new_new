@@ -1,0 +1,1 @@
+resources/views/frontend/thecore/partials/todays_deal.blade.php

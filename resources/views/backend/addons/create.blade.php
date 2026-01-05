@@ -1,0 +1,64 @@
+@extends('backend.layouts.app')
+
+@section('content')
+
+@php
+$purchase_wala_code = '';
+$envFile = base_path('.env');
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        list($key, $value) = explode('=', $line, 2);
+        $value = trim($value, '"');
+        if ($key === 'SYSTEM_KEY') {
+            $purchase_wala_code = $value;
+            break;
+        }
+    }
+}
+@endphp
+
+<div class="row">
+
+    <div class="col-lg-7 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0 h6">{{ translate('Install/Update Addon')}}</h5>
+            </div>
+            <form class="form-horizontal" action="{{ route('addons.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="card-body">
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-from-label" for="domain_purchase_code">{{ translate('Main item purchase code')}}</label>
+                        <div class="col-sm-9">
+                            <input type="text" id="domain_purchase_code" name="domain_purchase_code" value="{{ $purchase_wala_code }}" class="form-control" autocomplete="off" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-from-label" for="purchase_code">{{ translate('Addon purchase code')}}</label>
+                        <div class="col-sm-9">
+                            <input type="text" id="purchase_code" name="purchase_code" placeholder="Enter Addon Purchase Code by @indianvell" class="form-control" autocomplete="off" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-from-label" for="addon_zip">{{ translate('Zip File')}}</label>
+                        <div class="col-sm-9">
+                            <div class="custom-file">
+                                <label class="custom-file-label">
+                                    <input type="file" id="addon_zip" name="addon_zip"  class="custom-file-input" required>
+                                    <span class="custom-file-name">{{ translate('Choose file') }}</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mb-0 text-right">
+                        <button type="submit" class="btn btn-primary">{{translate('Install/Update')}}</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@endsection
