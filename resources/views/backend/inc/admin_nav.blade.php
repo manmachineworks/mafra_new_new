@@ -57,7 +57,7 @@
                 </div>
             </div>
             <!-- Shiprocket Token Refresh -->
-            <div class="aiz-topbar-item mr-3">
+            <!-- <div class="aiz-topbar-item mr-3">
                 <div class="d-flex align-items-center">
                     <button id="refresh_shiprocket_token" class="btn btn-topbar has-transition btn-icon btn-circle btn-light p-0 hov-bg-primary hov-svg-white d-flex align-items-center justify-content-center"
                         type="button" data-toggle="tooltip" data-title="{{ translate('Refresh Shiprocket Token') }}">
@@ -75,7 +75,7 @@
                     <span class="badge badge-inline badge-primary" id="shiprocket_status_badge">{{ translate('Shiprocket') }}s</span>
                     <span class="ml-2 small text-muted" id="shiprocket_wallet_balance">--</span>
                 </div>
-            </div>
+            </div> -->
             <!-- Topbar menus -->
             <div class="aiz-topbar-item mr-2 d-none d-xl-block">
                 <div class="d-flex align-items-center h-100">
