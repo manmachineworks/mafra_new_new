@@ -28,12 +28,7 @@
             <div class="form-group row">
                 <label class="col-md-2 col-form-label fs-14">{{ translate('Your Phone') }}</label>
                 <div class="col-md-10">
-                    <div class="input-group">
-                        <input type="text" class="form-control rounded-0" placeholder="{{ translate('Your Phone')}}" name="phone" id="phone" value="{{ Auth::user()->phone }}">
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-outline-secondary" onclick="sendOtp()">{{ translate('Verify Phone') }}</button>
-                        </div>
-                    </div>
+                    <input type="text" class="form-control rounded-0" placeholder="{{ translate('Your Phone')}}" name="phone" value="{{ Auth::user()->phone }}">
                 </div>
             </div>
             <!-- Photo-->
@@ -198,46 +193,10 @@
 @section('modal')
 <!-- Address modal -->
 @include('frontend.partials.address.address_modal')
-
-<!-- OTP Modal -->
-<div class="modal fade" id="otp-modal" tabindex="-1" role="dialog" aria-labelledby="otp-modal-label" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="otp-modal-label">{{ translate('Enter OTP') }}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="recaptcha-container"></div>
-                <div class="form-group">
-                    <label for="otp">{{ translate('OTP Code') }}</label>
-                    <input type="text" class="form-control" id="otp" placeholder="{{ translate('Enter OTP') }}">
-                </div>
-                <button type="button" class="btn btn-primary" onclick="verifyOtp()">{{ translate('Verify') }}</button>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection
 
 @section('script')
 @include('frontend.partials.address.address_js')
-
-<script>
-    window.firebaseConfig = {
-        apiKey: "{{ config('services.firebase.api_key') }}",
-        authDomain: "{{ config('services.firebase.auth_domain') }}",
-        projectId: "{{ config('services.firebase.project_id') }}",
-        storageBucket: "{{ config('services.firebase.storage_bucket') }}",
-        messagingSenderId: "{{ config('services.firebase.messaging_sender_id') }}",
-        appId: "{{ config('services.firebase.app_id') }}"
-    };
-</script>
-<script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
-<script src="{{ asset('js/firebase-otp.js') }}"></script>
 
 <script type="text/javascript">
     $('.new-email-verification').on('click', function() {

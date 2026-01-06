@@ -46,7 +46,6 @@
                                                         <button type="button" class="btn btn-outline-primary js-send-firebase-otp"
                                                             data-target-form="#forgot-pass-form"
                                                             data-phone-input="#phone-code"
-                                                            data-country-input="input[name='country_code']"
                                                             data-otp-wrapper="#forgot-otp-wrapper">
                                                             {{ translate('Send OTP') }}
                                                         </button>
