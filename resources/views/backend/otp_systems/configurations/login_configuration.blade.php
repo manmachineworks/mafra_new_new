@@ -1,9 +1,7 @@
 @extends('backend.layouts.app')
 
 @section('content')
-@php
-    $envFirebaseOtpEnabled = env('FIREBASE_OTP_ENABLED', false);
-@endphp
+    
 <div class="row">
     <div class="col-lg-6">
         <div class="card">
@@ -35,36 +33,31 @@
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <div>{{ translate('Enable Firebase OTP') }}</div>
                     <label class="aiz-switch aiz-switch-success mb-0">
-                        <input type="checkbox" onchange="updateSettings(this, 'firebase_otp_enabled')" {{ get_setting('firebase_otp_enabled') == 1 ? 'checked' : '' }} {{ $envFirebaseOtpEnabled ? '' : 'disabled' }}>
+                        <input type="checkbox" onchange="updateSettings(this, 'firebase_otp_enabled')" {{ get_setting('firebase_otp_enabled') == 1 ? 'checked' : '' }}>
                         <span class="slider round"></span>
                     </label>
                 </div>
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div>{{ translate('Require OTP on Login') }}</div>
                     <label class="aiz-switch aiz-switch-success mb-0">
-                        <input type="checkbox" onchange="updateSettings(this, 'firebase_otp_require_login')" {{ get_setting('firebase_otp_require_login') == 1 ? 'checked' : '' }} {{ $envFirebaseOtpEnabled ? '' : 'disabled' }}>
+                        <input type="checkbox" onchange="updateSettings(this, 'firebase_otp_require_login')" {{ get_setting('firebase_otp_require_login') == 1 ? 'checked' : '' }}>
                         <span class="slider round"></span>
                     </label>
                 </div>
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div>{{ translate('Require OTP on Registration') }}</div>
                     <label class="aiz-switch aiz-switch-success mb-0">
-                        <input type="checkbox" onchange="updateSettings(this, 'firebase_otp_require_registration')" {{ get_setting('firebase_otp_require_registration') == 1 ? 'checked' : '' }} {{ $envFirebaseOtpEnabled ? '' : 'disabled' }}>
+                        <input type="checkbox" onchange="updateSettings(this, 'firebase_otp_require_registration')" {{ get_setting('firebase_otp_require_registration') == 1 ? 'checked' : '' }}>
                         <span class="slider round"></span>
                     </label>
                 </div>
                 <div class="d-flex align-items-center justify-content-between">
                     <div>{{ translate('Require OTP on Forgot Password') }}</div>
                     <label class="aiz-switch aiz-switch-success mb-0">
-                        <input type="checkbox" onchange="updateSettings(this, 'firebase_otp_require_forgot')" {{ get_setting('firebase_otp_require_forgot') == 1 ? 'checked' : '' }} {{ $envFirebaseOtpEnabled ? '' : 'disabled' }}>
+                        <input type="checkbox" onchange="updateSettings(this, 'firebase_otp_require_forgot')" {{ get_setting('firebase_otp_require_forgot') == 1 ? 'checked' : '' }}>
                         <span class="slider round"></span>
                     </label>
                 </div>
-                @unless($envFirebaseOtpEnabled)
-                    <div class="alert alert-warning mt-3 mb-0">
-                        {{ translate('Set FIREBASE_OTP_ENABLED=true in your .env file to enable these settings and show the phone OTP UI.') }}
-                    </div>
-                @endunless
             </div>
         </div>
     </div>

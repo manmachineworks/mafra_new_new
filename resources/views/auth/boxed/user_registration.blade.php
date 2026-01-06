@@ -25,7 +25,7 @@
 
                                 <!-- Titles -->
                                 <div class="text-center text-lg-left">
-                                    <h1 class="fs-20 fs-md-24 fw-700 text-primary" style="text-transform: uppercase;">{{ translate('Create an account')}}</h1>
+                                    <h1 class="fs-20 fs-md-24 fw-700 text-primary" style="text-transform: uppercase;">tttt{{ translate('Create an account')}}</h1>
                                 </div>
 
                                 <!-- Register form -->
@@ -44,6 +44,42 @@
                                                 @endif
                                             </div>
 
+                                            {{-- @if (addon_is_activated('otp_system'))
+                                                <div class="form-group phone-form-group mb-1">
+                                                    <label for="phone" class="fs-12 fw-700 text-soft-dark">{{  translate('Phone') }}</label>
+                                                    <input type="number" id="phone-code" class="form-control rounded-0{{ $errors->has('phone') ? ' is-invalid' : '' }}" value="{{ $phone ?? old('phone') }}" placeholder="" name="phone" autocomplete="off" {{$phone  ? 'readonly' : ''}}>
+                                                </div>
+
+                                                <input type="hidden" name="country_code" value="">
+
+                                                <div class="form-group email-form-group mb-1 d-none">
+                                                    <label for="email" class="fs-12 fw-700 text-soft-dark">{{  translate('Email') }}</label>
+                                                    <input type="email" class="form-control rounded-0 {{ $errors->has('email') ? ' is-invalid' : '' }}" value="{{ $email ?? old('email') }}" placeholder="{{  translate('Email') }}" name="email"  autocomplete="off" {{$email  ? 'readonly' : ''}}>
+                                                    @if ($errors->has('email'))
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $errors->first('email') }}</strong>
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                @if($phone == null)
+                                                    <div class="form-group text-right">
+                                                        <button class="btn btn-link p-0 text-primary" type="button" onclick="toggleEmailPhone(this)"><i>*{{ translate('Use Email Instead') }}</i></button>
+                                                    </div>
+                                                @endif
+                                            @else
+                                                <div class="form-group">
+                                                    <label for="email" class="fs-12 fw-700 text-soft-dark">{{  translate('Email') }}</label>
+                                                    <input type="email" class="form-control rounded-0{{ $errors->has('email') ? ' is-invalid' : '' }}" value="{{ $email ?? old('email') }}" placeholder="{{  translate('Email') }}" name="email" {{$email  ? 'readonly' : ''}}>
+                                                    @if ($errors->has('email'))
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $errors->first('email') }}</strong>
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            @endif --}}
+
+                                            {{-- =================== --}}
+
                                             @if (addon_is_activated('otp_system'))
                                             <div>
                                                 {{-- Show both fields with the toggle button if neither email nor phone is set --}}
@@ -51,21 +87,18 @@
                                                     <div class="form-group phone-form-group mb-1">
                                                         <label for="phone" class="fs-12 fw-700 text-soft-dark">{{ translate('Phone') }}</label>
                                                         <div class="input-group registration-iti">
-                                                            <input type="tel" phone-number id="phone-code" class="form-control rounded-0{{ $errors->has('phone') ? ' is-invalid' : '' }}" 
+                                                            <input type="number" id="phone-code" class="form-control rounded-0{{ $errors->has('phone') ? ' is-invalid' : '' }}" 
                                                                 value="{{ old('phone') }}" placeholder="" name="phone" autocomplete="off">
                                                                 @if($firebaseOtpEnabled)
-                                                                    <button type="button"
-                                                                        id="sendOtpPhoneBtn"
-                                                                        class="btn btn-outline-primary js-send-firebase-otp"
+                                                                    <button class="btn btn-primary js-send-firebase-otp" type="button"
                                                                         data-target-form="#reg-form"
                                                                         data-phone-input="#phone-code"
-                                                                        data-country-input="#country_code"
-                                                                        data-otp-wrapper="#registration-otp-wrapper">
-                                                                        {{ translate('Send OTP') }}
+                                                                        data-otp-wrapper="#reg-otp-wrapper">
+                                                                        {{ translate('Send OTP') }} 
                                                                     </button>
                                                                 @elseif(get_setting('customer_registration_verify') == '1')
                                                                     <button class="btn btn-primary" type="button" id="sendOtpPhoneBtn" onclick="sendVerificationCode(this)">
-                                                                        {{ translate('Verify') }} 
+                                                                        {{ translate('Verify') }}
                                                                     </button>
                                                                 @endif
                                                         </div>
@@ -92,40 +125,30 @@
                                                     </div>
                                                 
                                         
-                                                    @unless($firebaseOtpRegistrationRequired)
-                                                        <div class="form-group text-right mb-0">
-                                                            <button class="btn btn-link p-0 text-primary" type="button" onclick="toggleEmailPhone(this)">
-                                                                <i>*{{ translate('Use Email Instead') }}</i>
-                                                            </button>
-                                                        </div>
-                                                    @endunless
-                                                </div>
-                                                @if($firebaseOtpEnabled)
-                                                    <div class="form-group mb-3 d-none" id="registration-otp-wrapper">
-                                                        <label class="form-label" for="registration_verification_code">{{ translate('Verification Code') }}</label>
-                                                        <div class="input-group">
-                                                            <input type="text" class="form-control" id="registration_verification_code" placeholder="{{ translate('OTP Code') }}" maxlength="6">
-                                                            <button class="btn btn-outline-primary js-verify-firebase-otp" type="button"
-                                                                data-target-form="#reg-form" data-otp-input="#registration_verification_code">
-                                                                {{ translate('Verify OTP') }}
-                                                            </button>
-                                                        </div>
+                                                    <div class="form-group text-right mb-0">
+                                                        <button class="btn btn-link p-0 text-primary" type="button" onclick="toggleEmailPhone(this)">
+                                                            <i>*{{ translate('Use Email Instead') }}</i>
+                                                        </button>
                                                     </div>
-                                                    <input type="hidden" name="firebase_id_token" id="firebase_reg_id_token" class="js-requires-otp">
-                                                    <input type="hidden" name="firebase_verified_phone" id="firebase_reg_verified_phone">
-                                                    <input type="hidden" name="firebase_uid" id="firebase_reg_uid">
-                                                @endif
-                                                <div class="form-group mb-3 d-none">
+                                                </div>
+                                                <div class="form-group mb-3 d-none" id="reg-otp-wrapper">
                                                     <label class="form-label" for="verification_code">{{ translate('Verification Code') }}</label>
                                                     <div class="input-group">
                                                         <input type="text"
                                                             class="form-control @error('verification_code') is-invalid @enderror border-right-0"
-                                                            name="code" id="verification_code"
+                                                            name="code" id="verification_code" data-target-form="#reg-form"
                                                             placeholder="{{ translate('Verification Code') }}"
                                                             maxlength="6">
-                                                        <span class="btn border border-left-0" id="verifyOtpBtn">
-                                                            <i class="las la-lg la-arrow-right"></i> 
-                                                        </span>
+                                                        @if($firebaseOtpEnabled)
+                                                            <button class="btn btn-outline-primary js-verify-firebase-otp" type="button"
+                                                                data-target-form="#reg-form" data-otp-input="#verification_code">
+                                                                {{ translate('Verify OTP') }}
+                                                            </button>
+                                                        @else
+                                                            <span class="btn border border-left-0" id="verifyOtpBtn">
+                                                                <i class="las la-lg la-arrow-right"></i> 
+                                                            </span>
+                                                        @endif
                                                         @error('otp')
                                                         <span class="invalid-feedback" role="alert">{{ $message }}</span>
                                                         @enderror
@@ -217,14 +240,15 @@
                                                 </label>
                                             </div>
 
+                                            @if($firebaseOtpEnabled)
+                                                <input type="hidden" name="firebase_id_token" id="firebase_reg_id_token">
+                                                <input type="hidden" name="firebase_verified_phone" id="firebase_reg_verified_phone">
+                                                <input type="hidden" name="firebase_uid" id="firebase_reg_uid">
+                                            @endif
+
                                             <!-- Submit Button -->
                                             <div class="mb-4 mt-4">
-                                                <button type="submit"
-                                                    class="btn btn-primary btn-block fw-600 rounded-0 js-requires-otp"
-                                                    id="createAccountBtn"
-                                                    @if($firebaseOtpRegistrationRequired) disabled @endif>
-                                                    {{  translate('Create Account') }}
-                                                </button>
+                                                <button type="submit" id="reg-submit" class="btn btn-primary btn-block fw-600 rounded-0 js-requires-otp" @if($firebaseOtpRegistrationRequired) disabled @endif>{{  translate('Create Account') }}</button>
                                             </div>
                                         </form>
                                         
@@ -292,20 +316,6 @@
 @endsection
 
 @section('script')
-    <script>
-        window.firebaseConfig = {
-            apiKey: "{{ config('services.firebase.api_key') }}",
-            authDomain: "{{ config('services.firebase.auth_domain') }}",
-            projectId: "{{ config('services.firebase.project_id') }}",
-            storageBucket: "{{ config('services.firebase.storage_bucket') }}",
-            messagingSenderId: "{{ config('services.firebase.messaging_sender_id') }}",
-            appId: "{{ config('services.firebase.app_id') }}"
-        };
-    </script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
-    <script src="{{ asset('js/firebase-otp.js') }}"></script>
-
     @if(get_setting('google_recaptcha') == 1 && get_setting('recaptcha_customer_register') == 1)
         <script src="https://www.google.com/recaptcha/api.js?render={{ env('CAPTCHA_KEY') }}"></script>
         
@@ -327,43 +337,4 @@
         </script>
     @endif
      @include('auth.verifyEmailOrPhone')
-
-    <script>
-        const regVerifyRequired = {{ get_setting('customer_registration_verify') ? 'true' : 'false' }};
-        const firebaseOtpRequired = {{ $firebaseOtpRegistrationRequired ? 'true' : 'false' }};
-        let firebaseOtpVerified = false;
-        const createBtn   = $('#createAccountBtn');
-        const termsCheckbox = $('input[name="checkbox_example_1"]');
-        const verifyBtn = window.verifyBtn || document.getElementById('verifyOtpBtn');
-        const firebaseVerifiedInput = document.getElementById('firebase_reg_verified_phone');
-
-        function toggleCreateBtn() {
-            const termsChecked = termsCheckbox.is(':checked');
-            const otpRequired = firebaseOtpRequired || regVerifyRequired;
-            const regVerified  = otpRequired
-                ? (firebaseOtpRequired ? firebaseOtpVerified : (verifyBtn && verifyBtn.classList.contains('disabled')))
-                : true;
-            createBtn.prop('disabled', !(termsChecked && regVerified));
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            if (firebaseVerifiedInput && firebaseVerifiedInput.value) {
-                firebaseOtpVerified = true;
-            }
-            toggleCreateBtn(); 
-            termsCheckbox.on('change', toggleCreateBtn); 
-        });
-
-        document.addEventListener('firebase-otp-verified', function(event) {
-            if (event.detail && event.detail.formId && event.detail.formId !== 'reg-form') return;
-            firebaseOtpVerified = true;
-            toggleCreateBtn();
-        });
-
-        document.addEventListener('firebase-otp-reset', function(event) {
-            if (event.detail && event.detail.formId && event.detail.formId !== 'reg-form') return;
-            firebaseOtpVerified = false;
-            toggleCreateBtn();
-        });
-    </script>
 @endsection
