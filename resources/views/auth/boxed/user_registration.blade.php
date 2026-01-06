@@ -25,7 +25,7 @@
 
                                 <!-- Titles -->
                                 <div class="text-center text-lg-left">
-                                    <h1 class="fs-20 fs-md-24 fw-700 text-primary" style="text-transform: uppercase;">{{ translate('Create an account')}}dsfsdf</h1>
+                                    <h1 class="fs-20 fs-md-24 fw-700 text-primary" style="text-transform: uppercase;">{{ translate('Create an account')}}</h1>
                                 </div>
 
                                 <!-- Register form -->
