@@ -59,11 +59,16 @@ class RegisterController extends Controller
      */
     protected function validator(array $data)
     {
+        $requireRecaptcha = get_setting('google_recaptcha') == 1
+            && get_setting('recaptcha_customer_register') == 1
+            && !empty(env('RECAPTCHA_SECRET_KEY'))
+            && !empty(env('CAPTCHA_KEY'));
+
         $rules = [
             'name' => 'required|string|max:255',
             'password' => 'required|string|min:6|confirmed',
             'g-recaptcha-response' => [
-                Rule::when(get_setting('google_recaptcha') == 1 && get_setting('recaptcha_customer_register') == 1 , ['required', new Recaptcha()], ['sometimes'])
+                Rule::when($requireRecaptcha, ['required', 'string', new Recaptcha()], ['sometimes', 'nullable'])
             ]
         ];
 
