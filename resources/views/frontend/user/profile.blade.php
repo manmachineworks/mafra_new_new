@@ -225,6 +225,16 @@
 @section('script')
 @include('frontend.partials.address.address_js')
 
+<script>
+    window.firebaseConfig = {
+        apiKey: "{{ config('services.firebase.api_key') }}",
+        authDomain: "{{ config('services.firebase.auth_domain') }}",
+        projectId: "{{ config('services.firebase.project_id') }}",
+        storageBucket: "{{ config('services.firebase.storage_bucket') }}",
+        messagingSenderId: "{{ config('services.firebase.messaging_sender_id') }}",
+        appId: "{{ config('services.firebase.app_id') }}"
+    };
+</script>
 <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
 <script src="{{ asset('js/firebase-otp.js') }}"></script>
