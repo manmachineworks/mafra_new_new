@@ -483,18 +483,74 @@
 							</div>
 						</form>
 					</div>
-
-					<!-- Today's Deal -->
+<!-- Today's Deal -->
 					<div class="tab-pane fade" id="todays_deal" role="tabpanel" aria-labelledby="todays-deal-tab">
 						<form action="{{ route('business_settings.update') }}" method="POST" enctype="multipart/form-data">
 							@csrf
 							<input type="hidden" name="tab" value="todays_deal">
 							<div class="bg-white p-3 p-sm-2rem">
 								<div class="row gutters-16">
+									<!-- Todays Deal Section Settings -->
+									<div class="col-lg-5 order-lg-1 mb-3">
+										<div class="p-4 border h-250px h-lg-300px" style="background: #fcfcfc;">
+											<p class="fs-14 fw-500">{{ translate("Today's Deal Section Settings") }}</p>
+											<!-- background color checkbox -->
+											<div class="form-group d-inline-block">
+												<label class="aiz-checkbox">
+													<input type="hidden" name="types[]" value="todays_deal_section_bg">
+													<input type="checkbox" class="check-one" name="todays_deal_section_bg" value="1" @if(get_setting('todays_deal_section_bg') == 1) checked @endif>
+													<span class="fs-13 fw-400">{{ translate('Use background color in this section') }}</span>
+													<span class="aiz-square-check"></span>
+												</label>
+											</div>
+											<!-- Select Color -->
+											<div class="form-group ml-4">
+												<label class="col-from-label">{{ translate('Select Color') }}</label>
+												<div class="input-group mb-3">
+													<input type="hidden" name="types[]" value="todays_deal_section_bg_color">
+													<input type="text" class="form-control aiz-color-input" placeholder="#000000" name="todays_deal_section_bg_color" value="{{ get_setting('todays_deal_section_bg_color') }}">
+													<div class="input-group-append">
+														<span class="input-group-text p-0">
+															<input class="aiz-color-picker border-0 size-40px" type="color" value="{{ get_setting('todays_deal_section_bg_color') }}">
+														</span>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
 									<!-- Todays Deal Settings -->
-									<div class="col-lg-12">
+									<div class="col-lg-7">
 										<div class="w-100">
-											
+											<!-- Large Banner -->
+											<div class="form-group">
+												<label class="col-from-label fs-13 fw-500">{{ translate("Large Banner") }} (<small>{{ translate('Will be shown in large device') }}</small>)</label>
+												<div class="input-group " data-toggle="aizuploader" data-type="image">
+													<div class="input-group-prepend">
+														<div class="input-group-text bg-soft-secondary">{{ translate('Browse') }}</div>
+													</div>
+													<div class="form-control file-amount">{{ translate('Choose File') }}</div>
+													<input type="hidden" name="types[][{{ $lang }}]" value="todays_deal_banner">
+													<input type="hidden" name="todays_deal_banner" value="{{ get_setting('todays_deal_banner', null, $lang) }}" class="selected-files">
+												</div>
+												<div class="file-preview box"></div>
+                                                <small class="text-muted">{{ translate("Minimum dimensions required: 1370px width X 242px height.") }}</small>
+											</div>
+
+											<!-- Small Banner -->
+											<div class="form-group">
+												<label class="col-from-label fs-13 fw-500">{{ translate("Small Banner") }} (<small>{{ translate('Will be shown in small device') }}</small>)</label>
+												<div class="input-group " data-toggle="aizuploader" data-type="image">
+													<div class="input-group-prepend">
+														<div class="input-group-text bg-soft-secondary">{{ translate('Browse') }}</div>
+													</div>
+													<div class="form-control file-amount">{{ translate('Choose File') }}</div>
+													<input type="hidden" name="types[][{{ $lang }}]" value="todays_deal_banner_small">
+													<input type="hidden" name="todays_deal_banner_small" value="{{ get_setting('todays_deal_banner_small', null, $lang) }}" class="selected-files">
+												</div>
+												<div class="file-preview box"></div>
+                                                <small class="text-muted">{{ translate("Minimum dimensions required: 400px width X 200px height.") }}</small>
+											</div>
 
 											<!-- Products background color -->
 											<div class="form-group">
@@ -511,7 +567,24 @@
 												</div>
 											</div>
 
-											
+											<!-- Banner Text Color -->
+											<div class="form-group">
+												<label class="col-from-label fs-13 fw-500">{{ translate("Today's Deal Banner Text Color") }}</label>
+												<div class="input-group mb-3 d-flex">
+													@php
+														$todays_deal_banner_text_color =  get_setting('todays_deal_banner_text_color');
+													@endphp
+													<input type="hidden" name="types[]" value="todays_deal_banner_text_color">
+													<div class="radio mar-btm mr-3 d-flex align-items-center">
+														<input id="todays_deal_banner_text_light" class="magic-radio" type="radio" name="todays_deal_banner_text_color" value="light" @if(($todays_deal_banner_text_color == 'light') || ($todays_deal_banner_text_color == null)) checked @endif>
+														<label for="todays_deal_banner_text_light" class="mb-0 ml-2">{{translate('Light')}}</label>
+													</div>
+													<div class="radio mar-btm mr-3 d-flex align-items-center">
+														<input id="todays_deal_banner_text_dark" class="magic-radio" type="radio" name="todays_deal_banner_text_color" value="dark" @if($todays_deal_banner_text_color == 'dark') checked @endif>
+														<label for="todays_deal_banner_text_dark" class="mb-0 ml-2">{{translate('Dark')}}</label>
+													</div>
+												</div>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -522,7 +595,6 @@
 							</div>
 						</form>
 					</div>
-
 					<!-- Banner Level 1 -->
 					<div class="tab-pane fade" id="banner_1" role="tabpanel" aria-labelledby="banner-1-tab">
 						<form action="{{ route('business_settings.update') }}" method="POST" enctype="multipart/form-data">
