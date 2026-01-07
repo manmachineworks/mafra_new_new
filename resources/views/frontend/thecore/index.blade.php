@@ -14,10 +14,9 @@
 
     
 @php $lang = get_system_language()->code; @endphp
-  <!-- Sliders -->
     <!-- Sliders -->
-    <div class="home-banner-area mb-3" style="background-color:#000000;">
-        <div class="@if(get_setting('slider_section_full_width') == 1) container-fluid px-0 @else container @endif">
+    <div class="home-banner-area mb-3" style="background-color: {{ get_setting('slider_section_bg_color', '#dedede') }}">
+        <div class="@if(get_setting('slider_section_full_width') == 1) p-0 @else container @endif">
             <!-- Sliders -->
             <div class="home-slider slider-full">
                 @if (get_setting('home_slider_images', null, $lang) != null)

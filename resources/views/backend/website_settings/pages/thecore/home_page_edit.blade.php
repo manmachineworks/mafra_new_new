@@ -38,12 +38,12 @@
 						</a>
 					</li>--}}
 					<!-- Hot Categories -->
-					<li class="nav-item">
+					<!-- <li class="nav-item">
 						<a class="nav-link" id="hot-categories-tab" href="#hot_categories"
 							data-toggle="tab" data-target="#hot_categories" type="button" role="tab" aria-controls="hot_categories" aria-selected="false">
 							{{ translate('Hot Categories') }}
 						</a>
-					</li>
+					</li> -->
 					<!-- Featured Products -->
 					<li class="nav-item">
 						<a class="nav-link" id="featured-tab" href="#featured"
@@ -58,6 +58,8 @@
 							{{ translate('Featured Categories') }}
 						</a>
 					</li>
+
+					
 					<!-- Best Selling -->
 					<li class="nav-item">
 						<a class="nav-link" id="best-selling-tab" href="#best_selling"
@@ -102,13 +104,43 @@
 					</li>
 
 					<!-- Banner Level 3 -->
-					{{--<li class="nav-item">
+					<li class="nav-item">
 						<a class="nav-link" id="banner-3-tab" href="#banner_3"
 							data-toggle="tab" data-target="#banner_3" type="button" role="tab" aria-controls="banner_3" aria-selected="false">
 							{{ translate('Banner Level 3') }}
 						</a>
-					</li> --}}
+					</li>
+					<!-- Banner Level 4 -->
+					<li class="nav-item">
+						<a class="nav-link" id="banner-4-tab" href="#banner_4"
+							data-toggle="tab" data-target="#banner_4" type="button" role="tab" aria-controls="banner_4" aria-selected="false">
+							{{ translate('Banner Level 4') }}
+						</a>
+					</li>
 					
+
+					<!-- Banner Level 5 -->
+					<li class="nav-item">
+						<a class="nav-link" id="banner-5-tab" href="#banner_5"
+							data-toggle="tab" data-target="#banner_5" type="button" role="tab" aria-controls="banner_5" aria-selected="false">
+							{{ translate('Banner Level 5') }}
+						</a>
+					</li>
+					<!-- Banner Level 6 -->
+					<li class="nav-item">
+						<a class="nav-link" id="banner-6-tab" href="#banner_6"
+							data-toggle="tab" data-target="#banner_6" type="button" role="tab" aria-controls="banner_6" aria-selected="false">
+							{{ translate('Banner Level 6') }}
+						</a>
+					</li>
+
+					<!-- Category Wise Products -->
+					<li class="nav-item">
+						<a class="nav-link" id="home-categories-tab" href="#home_categories"
+							data-toggle="tab" data-target="#home_categories" type="button" role="tab" aria-controls="home_categories" aria-selected="false">
+							{{ translate('Category Wise Products') }}
+						</a>
+					</li>
 
 					<!-- Digital Products -->
 					{{-- <li class="nav-item">
@@ -118,12 +150,12 @@
 						</a>
 					</li> --}}
 					<!-- Classifieds -->
-					<li class="nav-item">
+					<!-- <li class="nav-item">
 						<a class="nav-link" id="classifiedss-tab" href="#classifieds"
 							data-toggle="tab" data-target="#classifieds" type="button" role="tab" aria-controls="classifieds" aria-selected="false">
 							{{ translate('Classifieds') }}
 						</a>
-					</li>
+					</li> -->
 					@if(addon_is_activated('preorder'))
 					<!-- Newest Preorder Products -->
 					<li class="nav-item">
@@ -141,12 +173,12 @@
 						</a>
 					</li> --}}
 					<!-- Top Brands -->
-					{{-- <li class="nav-item">
+				 <li class="nav-item">
 						<a class="nav-link" id="brands-tab" href="#brands"
 							data-toggle="tab" data-target="#brands" type="button" role="tab" aria-controls="brands" aria-selected="false">
 							{{ translate('Top Brands') }}
 						</a>
-					</li> --}}
+					</li> 
 					
 				</ul>
 			</div>
@@ -178,128 +210,141 @@
 							<input type="hidden" name="types[][{{ $lang }}]" value="home_slider_links">
 
 							<div class="bg-white p-3 p-sm-2rem">
-								<div class="w-100">
-									<!-- Information -->
-									<div class="fs-11 d-flex mb-2rem">
-										<div>
-											<svg id="_79508b4b8c932dcad9066e2be4ca34f2" data-name="79508b4b8c932dcad9066e2be4ca34f2" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-												<path id="Path_40683" data-name="Path 40683" d="M8,16a8,8,0,1,1,8-8A8.024,8.024,0,0,1,8,16ZM8,1.333A6.667,6.667,0,1,0,14.667,8,6.686,6.686,0,0,0,8,1.333Z" fill="#9da3ae"/>
-												<path id="Path_40684" data-name="Path 40684" d="M10.6,15a.926.926,0,0,1-.667-.333c-.333-.467-.067-1.133.667-2.933.133-.267.267-.6.4-.867a.714.714,0,0,1-.933-.067.644.644,0,0,1,0-.933A3.408,3.408,0,0,1,11.929,9a.926.926,0,0,1,.667.333c.333.467.067,1.133-.667,2.933-.133.267-.267.6-.4.867a.714.714,0,0,1,.933.067.644.644,0,0,1,0,.933A3.408,3.408,0,0,1,10.6,15Z" transform="translate(-3.262 -3)" fill="#9da3ae"/>
-												<circle id="Ellipse_813" data-name="Ellipse 813" cx="1" cy="1" r="1" transform="translate(8 3.333)" fill="#9da3ae"/>
-												<path id="Path_40685" data-name="Path 40685" d="M12.833,7.167a1.333,1.333,0,1,1,1.333-1.333A1.337,1.337,0,0,1,12.833,7.167Zm0-2a.63.63,0,0,0-.667.667.667.667,0,1,0,1.333,0A.63.63,0,0,0,12.833,5.167Z" transform="translate(-3.833 -1.5)" fill="#9da3ae"/>
-											</svg>
-										</div>
-										<div class="ml-2 text-gray">
-											<div class="mb-2">{{ translate('Minimum dimensions required: 554px width X 516px height.') }}</div>
-											<div>{{ translate('We have limited banner height to maintain UI. We had to crop from both left & right side in view for different devices to make it responsive. Before designing banner keep these points in mind.') }}</div>
-										</div>
-									</div>
-
-									
-
-									<!-- Images & links -->
-									<div class="home-slider-target">
-										@php
-											$home_slider_images = get_setting('home_slider_images', null, $lang);
-											$home_slider_links = get_setting('home_slider_links', null, $lang);
-										@endphp
-										@if ($home_slider_images != null)
-											@foreach (json_decode($home_slider_images, true) as $key => $value)
-												<div class="p-3 p-md-4 mb-3 mb-md-2rem remove-parent" style="border: 1px dashed #e4e5eb;">
-													<div class="row gutters-5">
-														<!-- Image -->
-														<div class="col-md-5">
-															<div class="form-group mb-md-0">
-																<div class="input-group" data-toggle="aizuploader" data-type="image">
-																	<div class="input-group-prepend">
-																		<div class="input-group-text bg-soft-secondary font-weight-medium">{{ translate('Browse')}}</div>
-																	</div>
-																	<div class="form-control file-amount">{{ translate('Choose File') }}</div>
-																	<input type="hidden" name="home_slider_images[]" class="selected-files" value="{{ json_decode($home_slider_images, true)[$key] }}">
-																</div>
-																<div class="file-preview box sm">
-																</div>
-															</div>
-														</div>
-														<!-- link -->
-														<div class="col-md">
-															<div class="form-group mb-md-0">
-																<input type="text" class="form-control" placeholder="http://" name="home_slider_links[]" value="{{ isset(json_decode($home_slider_links, true)[$key]) ? json_decode($home_slider_links, true)[$key] : '' }}">
-															</div>
-														</div>
-														<!-- remove parent button -->
-														<div class="col-md-auto">
-															<div class="form-group mb-md-0">
-																<button type="button" class="mt-1 btn btn-icon btn-circle btn-sm btn-soft-danger" data-toggle="remove-parent" data-parent=".remove-parent">
-																	<i class="las la-times"></i>
-																</button>
-															</div>
-														</div>
-													</div>
-												</div>
-											@endforeach
-										@endif
-									</div>
-
-									<!-- Add button -->
-									<div class="">
-										<button
-											type="button"
-											class="btn btn-block border hov-bg-soft-secondary fs-14 rounded-0 d-flex align-items-center justify-content-center" style="background: #fcfcfc;"
-											data-toggle="add-more"
-											data-content='
-											<div class="p-3 p-md-4 mb-3 mb-md-2rem remove-parent" style="border: 1px dashed #e4e5eb;">
-												<div class="row gutters-5">
-													<!-- Image -->
-													<div class="col-md-5">
-														<div class="form-group mb-md-0">
-															<div class="input-group" data-toggle="aizuploader" data-type="image">
-																<div class="input-group-prepend">
-																	<div class="input-group-text bg-soft-secondary font-weight-medium">{{ translate('Browse')}}</div>
-																</div>
-																<div class="form-control file-amount">{{ translate('Choose File') }}</div>
-																<input type="hidden" name="home_slider_images[]" class="selected-files" value="">
-															</div>
-															<div class="file-preview box sm">
-															</div>
-														</div>
-													</div>
-													<!-- link -->
-													<div class="col-md">
-														<div class="form-group mb-md-0">
-															<input type="text" class="form-control" placeholder="http://" name="home_slider_links[]" value="">
-														</div>
-													</div>
-													<!-- remove parent button -->
-													<div class="col-md-auto">
-														<div class="form-group mb-md-0">
-															<button type="button" class="mt-1 btn btn-icon btn-circle btn-sm btn-soft-danger" data-toggle="remove-parent" data-parent=".remove-parent">
-																<i class="las la-times"></i>
-															</button>
-														</div>
-													</div>
-												</div>
-											</div>'
-											data-target=".home-slider-target">
-											<i class="las la-2x text-success la-plus-circle"></i>
-											<span class="ml-2">{{ translate('Add New') }}</span>
-										</button>
-									</div>
-
-									<div class="row">
-										<div class="col-md-12 mt-2">
-											<div class="form-group">
-												<label class="col-from-label fs-13 fw-500">{{ translate(' Background color') }}</label>
-												<div class="input-group">
-													@php $hero_bg_color = get_setting('hero_bg_color'); @endphp
-													<input type="hidden" name="types[]" value="hero_bg_color">
-													<input type="text" class="form-control aiz-color-input" placeholder="#000000" name="hero_bg_color" value="{{ $hero_bg_color }}">
+								<div class="row gutters-16">
+									<!-- Slider Section Settings -->
+									<div class="col-lg-5 order-lg-1 mb-3">
+										<div class="p-4 border h-250px h-lg-300px" style="background: #fcfcfc;">
+											<p class="fs-14 fw-500">{{ translate("Slider Section Settings") }}</p>
+											<!-- Slider full width checkbox -->
+											<div class="form-group ml-4 d-inline-block">
+												<label class="aiz-checkbox">
+													<input type="hidden" name="types[]" value="slider_section_full_width">
+													<input type="checkbox" class="check-one" name="slider_section_full_width" value="1" @if(get_setting('slider_section_full_width') == 1) checked @endif>
+													<span class="fs-13 fw-400">{{ translate('Use Slider as full width') }}</span>
+													<span class="aiz-square-check"></span>
+												</label>
+											</div>
+											<!-- Select Color -->
+											<div class="form-group ml-4">
+												<label class="col-from-label">{{ translate('Select background color in this section') }}</label>
+												<div class="input-group mb-3">
+													<input type="hidden" name="types[]" value="slider_section_bg_color">
+													<input type="text" class="form-control aiz-color-input" placeholder="#000000" name="slider_section_bg_color" value="{{ get_setting('slider_section_bg_color') }}">
 													<div class="input-group-append">
 														<span class="input-group-text p-0">
-															<input class="aiz-color-picker border-0 size-40px" type="color" value="{{ $hero_bg_color }}">
+															<input class="aiz-color-picker border-0 size-40px" type="color" value="{{ get_setting('slider_section_bg_color') }}">
 														</span>
 													</div>
 												</div>
+											</div>
+										</div>
+									</div>
+									<!-- Slider Deal Settings -->
+									<div class="col-lg-7">
+										<div class="w-100">
+											<!-- Information -->
+											<div class="fs-11 d-flex mb-2rem">
+												<div>
+													<svg id="_79508b4b8c932dcad9066e2be4ca34f2" data-name="79508b4b8c932dcad9066e2be4ca34f2" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+														<path id="Path_40683" data-name="Path 40683" d="M8,16a8,8,0,1,1,8-8A8.024,8.024,0,0,1,8,16ZM8,1.333A6.667,6.667,0,1,0,14.667,8,6.686,6.686,0,0,0,8,1.333Z" fill="#9da3ae"/>
+														<path id="Path_40684" data-name="Path 40684" d="M10.6,15a.926.926,0,0,1-.667-.333c-.333-.467-.067-1.133.667-2.933.133-.267.267-.6.4-.867a.714.714,0,0,1-.933-.067.644.644,0,0,1,0-.933A3.408,3.408,0,0,1,11.929,9a.926.926,0,0,1,.667.333c.333.467.067,1.133-.667,2.933-.133.267-.267.6-.4.867a.714.714,0,0,1,.933.067.644.644,0,0,1,0,.933A3.408,3.408,0,0,1,10.6,15Z" transform="translate(-3.262 -3)" fill="#9da3ae"/>
+														<circle id="Ellipse_813" data-name="Ellipse 813" cx="1" cy="1" r="1" transform="translate(8 3.333)" fill="#9da3ae"/>
+														<path id="Path_40685" data-name="Path 40685" d="M12.833,7.167a1.333,1.333,0,1,1,1.333-1.333A1.337,1.337,0,0,1,12.833,7.167Zm0-2a.63.63,0,0,0-.667.667.667.667,0,1,0,1.333,0A.63.63,0,0,0,12.833,5.167Z" transform="translate(-3.833 -1.5)" fill="#9da3ae"/>
+													</svg>
+												</div>
+												<div class="ml-2 text-gray">
+													<div class="mb-2">{{ translate('Minimum dimensions required: 1903px width X 553px height.') }}</div>
+													<div>{{ translate('We have limited banner height to maintain UI. We had to crop from both left & right side in view for different devices to make it responsive. Before designing banner keep these points in mind.') }}</div>
+												</div>
+											</div>
+
+											<!-- Images & links -->
+											<div class="home-slider-target">
+												@php
+													$home_slider_images = get_setting('home_slider_images', null, $lang);
+													$home_slider_links = get_setting('home_slider_links', null, $lang);
+												@endphp
+												@if ($home_slider_images != null)
+													@foreach (json_decode($home_slider_images, true) as $key => $value)
+														<div class="p-3 p-md-4 mb-3 mb-md-2rem remove-parent" style="border: 1px dashed #e4e5eb;">
+															<div class="row gutters-5">
+																<!-- Image -->
+																<div class="col-md-5">
+																	<div class="form-group mb-md-0">
+																		<div class="input-group" data-toggle="aizuploader" data-type="image">
+																			<div class="input-group-prepend">
+																				<div class="input-group-text bg-soft-secondary font-weight-medium">{{ translate('Browse')}}</div>
+																			</div>
+																			<div class="form-control file-amount">{{ translate('Choose File') }}</div>
+																			<input type="hidden" name="home_slider_images[]" class="selected-files" value="{{ json_decode($home_slider_images, true)[$key] }}">
+																		</div>
+																		<div class="file-preview box sm">
+																		</div>
+																	</div>
+																</div>
+																<!-- link -->
+																<div class="col-md">
+																	<div class="form-group mb-md-0">
+																		<input type="text" class="form-control" placeholder="http://" name="home_slider_links[]" value="{{ isset(json_decode($home_slider_links, true)[$key]) ? json_decode($home_slider_links, true)[$key] : '' }}">
+																	</div>
+																</div>
+																<!-- remove parent button -->
+																<div class="col-md-auto">
+																	<div class="form-group mb-md-0">
+																		<button type="button" class="mt-1 btn btn-icon btn-circle btn-sm btn-soft-danger" data-toggle="remove-parent" data-parent=".remove-parent">
+																			<i class="las la-times"></i>
+																		</button>
+																	</div>
+																</div>
+															</div>
+														</div>
+													@endforeach
+												@endif
+											</div>
+
+											<!-- Add button -->
+											<div class="">
+												<button
+													type="button"
+													class="btn btn-block border hov-bg-soft-secondary fs-14 rounded-0 d-flex align-items-center justify-content-center" style="background: #fcfcfc;"
+													data-toggle="add-more"
+													data-content='
+													<div class="p-3 p-md-4 mb-3 mb-md-2rem remove-parent" style="border: 1px dashed #e4e5eb;">
+														<div class="row gutters-5">
+															<!-- Image -->
+															<div class="col-md-5">
+																<div class="form-group mb-md-0">
+																	<div class="input-group" data-toggle="aizuploader" data-type="image">
+																		<div class="input-group-prepend">
+																			<div class="input-group-text bg-soft-secondary font-weight-medium">{{ translate('Browse')}}</div>
+																		</div>
+																		<div class="form-control file-amount">{{ translate('Choose File') }}</div>
+																		<input type="hidden" name="home_slider_images[]" class="selected-files" value="">
+																	</div>
+																	<div class="file-preview box sm">
+																	</div>
+																</div>
+															</div>
+															<!-- link -->
+															<div class="col-md">
+																<div class="form-group mb-md-0">
+																	<input type="text" class="form-control" placeholder="http://" name="home_slider_links[]" value="">
+																</div>
+															</div>
+															<!-- remove parent button -->
+															<div class="col-md-auto">
+																<div class="form-group mb-md-0">
+																	<button type="button" class="mt-1 btn btn-icon btn-circle btn-sm btn-soft-danger" data-toggle="remove-parent" data-parent=".remove-parent">
+																		<i class="las la-times"></i>
+																	</button>
+																</div>
+															</div>
+														</div>
+													</div>'
+													data-target=".home-slider-target">
+													<i class="las la-2x text-success la-plus-circle"></i>
+													<span class="ml-2">{{ translate('Add New') }}</span>
+												</button>
 											</div>
 										</div>
 									</div>
@@ -483,6 +528,35 @@
 							</div>
 						</form>
 					</div>
+
+
+<!-- Top Brands -->
+					<div class="tab-pane fade" id="brands" role="tabpanel" aria-labelledby="brands-tab">
+						<form action="{{ route('business_settings.update') }}" method="POST" enctype="multipart/form-data">
+							@csrf
+							<input type="hidden" name="tab" value="brands">
+							<div class="bg-white p-3 p-sm-2rem">
+								<div class="w-100">
+									<label class="col-from-label fs-13 fw-500 mb-3">{{ translate('Top Brands (Max 12)') }}</label>
+									<!-- Brands -->
+									<div class="form-group">
+										<input type="hidden" name="types[]" value="top_brands">
+										<select name="top_brands[]" class="form-control aiz-selectpicker" multiple data-max-options="12" data-live-search="true" data-selected="{{ get_setting('top_brands') }}">
+											@foreach (\App\Models\Brand::all() as $key => $brand)
+												<option value="{{ $brand->id }}">{{ $brand->getTranslation('name') }}</option>
+											@endforeach
+										</select>
+									</div>
+								</div>
+								<!-- Save Button -->
+								<div class="mt-4 text-right">
+									<button type="submit" class="btn btn-success w-230px btn-md rounded-2 fs-14 fw-700 shadow-success">{{ translate('Save') }}</button>
+								</div>
+							</div>
+						</form>
+					</div>
+
+
 <!-- Today's Deal -->
 					<div class="tab-pane fade" id="todays_deal" role="tabpanel" aria-labelledby="todays-deal-tab">
 						<form action="{{ route('business_settings.update') }}" method="POST" enctype="multipart/form-data">
@@ -815,6 +889,531 @@
 						</form>
 					</div>
 
+
+					
+					<!-- Banner Level 3 -->
+					<div class="tab-pane fade" id="banner_3" role="tabpanel" aria-labelledby="banner-3-tab">
+						<form action="{{ route('business_settings.update') }}" method="POST" enctype="multipart/form-data">
+							@csrf
+							<input type="hidden" name="tab" value="banner_3">
+							<input type="hidden" name="types[][{{ $lang }}]" value="home_banner3_images">
+							<input type="hidden" name="types[][{{ $lang }}]" value="home_banner3_links">
+
+							<div class="bg-white p-3 p-sm-2rem">
+								<div class="w-100">
+									<label class="col-from-label fs-13 fw-500 mb-0">{{ translate('Banner & Links (Max 3)') }}</label>
+                                    <div class="small text-muted mb-3">{{ translate("Minimum dimensions required: 432px width X 655px height.") }}</div>
+
+									<!-- Images & links -->
+									<div class="home-banner3-target">
+										@php
+											$home_banner3_images = get_setting('home_banner3_images', null, $lang);
+											$home_banner3_links = get_setting('home_banner3_links', null, $lang);
+										@endphp
+										@if ($home_banner3_images != null)
+											@foreach (json_decode($home_banner3_images, true) as $key => $value)
+												<div class="p-3 p-md-4 mb-3 mb-md-2rem remove-parent" style="border: 1px dashed #e4e5eb;">
+													<div class="row gutters-5">
+														<!-- Image -->
+														<div class="col-md-5">
+															<div class="form-group mb-md-0">
+																<div class="input-group" data-toggle="aizuploader" data-type="image">
+																	<div class="input-group-prepend">
+																		<div class="input-group-text bg-soft-secondary font-weight-medium">{{ translate('Browse')}}</div>
+																	</div>
+																	<div class="form-control file-amount">{{ translate('Choose File') }}</div>
+																	<input type="hidden" name="home_banner3_images[]" class="selected-files" value="{{ json_decode($home_banner3_images, true)[$key] }}">
+																</div>
+																<div class="file-preview box sm">
+																</div>
+															</div>
+														</div>
+														<!-- link -->
+														<div class="col-md">
+															<div class="form-group mb-md-0">
+																<input type="text" class="form-control" placeholder="http://" name="home_banner3_links[]" value="{{ isset(json_decode($home_banner3_links, true)[$key]) ? json_decode($home_banner3_links, true)[$key] : '' }}">
+															</div>
+														</div>
+														<!-- remove parent button -->
+														<div class="col-md-auto">
+															<div class="form-group mb-md-0">
+																<button type="button" class="mt-1 btn btn-icon btn-circle btn-sm btn-soft-danger" data-toggle="remove-parent" data-parent=".remove-parent">
+																	<i class="las la-times"></i>
+																</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											@endforeach
+										@endif
+									</div>
+
+									<!-- Add button -->
+									<div class="">
+										<button
+											type="button"
+											class="btn btn-block border hov-bg-soft-secondary fs-14 rounded-0 d-flex align-items-center justify-content-center" style="background: #fcfcfc;"
+											data-toggle="add-more"
+											data-content='
+											<div class="p-3 p-md-4 mb-3 mb-md-2rem remove-parent" style="border: 1px dashed #e4e5eb;">
+												<div class="row gutters-5">
+													<!-- Image -->
+													<div class="col-md-5">
+														<div class="form-group mb-md-0">
+															<div class="input-group" data-toggle="aizuploader" data-type="image">
+																<div class="input-group-prepend">
+																	<div class="input-group-text bg-soft-secondary font-weight-medium">{{ translate('Browse')}}</div>
+																</div>
+																<div class="form-control file-amount">{{ translate('Choose File') }}</div>
+																<input type="hidden" name="home_banner3_images[]" class="selected-files" value="">
+															</div>
+															<div class="file-preview box sm">
+															</div>
+														</div>
+													</div>
+													<!-- link -->
+													<div class="col-md">
+														<div class="form-group mb-md-0 mb-0">
+															<input type="text" class="form-control" placeholder="http://" name="home_banner3_links[]" value="">
+														</div>
+													</div>
+													<!-- remove parent button -->
+													<div class="col-md-auto">
+														<div class="form-group mb-md-0">
+															<button type="button" class="mt-1 btn btn-icon btn-circle btn-sm btn-soft-danger" data-toggle="remove-parent" data-parent=".remove-parent">
+																<i class="las la-times"></i>
+															</button>
+														</div>
+													</div>
+												</div>
+											</div>'
+											data-target=".home-banner3-target">
+											<i class="las la-2x text-success la-plus-circle"></i>
+											<span class="ml-2">{{ translate('Add New') }}</span>
+										</button>
+									</div>
+								</div>
+								<!-- Save Button -->
+								<div class="mt-4 text-right">
+									<button type="submit" class="btn btn-success w-230px btn-md rounded-2 fs-14 fw-700 shadow-success">{{ translate('Save') }}</button>
+								</div>
+							</div>
+						</form>
+					</div>
+
+					<!-- Banner Level 4 -->
+					<div class="tab-pane fade" id="banner_4" role="tabpanel" aria-labelledby="banner-4-tab">
+						<form action="{{ route('business_settings.update') }}" method="POST" enctype="multipart/form-data">
+							@csrf
+							<input type="hidden" name="tab" value="banner_4">
+							<input type="hidden" name="types[][{{ $lang }}]" value="home_banner4_images">
+							<input type="hidden" name="types[][{{ $lang }}]" value="home_banner4_links">
+
+							<div class="bg-white p-3 p-sm-2rem">
+								<div class="w-100">
+									<label class="col-from-label fs-13 fw-500 mb-0">{{ translate('Banner & Links (Max 3)') }}</label>
+                                    <div class="small text-muted mb-3">{{ translate("Minimum dimensions required: 896px width X 655px height.") }}</div>
+
+									<!-- Images & links -->
+									<div class="home-banner4-target">
+										@php
+											$home_banner4_images = get_setting('home_banner4_images', null, $lang);
+											$home_banner4_links = get_setting('home_banner4_links', null, $lang);
+										@endphp
+										@if ($home_banner4_images != null)
+											@foreach (json_decode($home_banner4_images, true) as $key => $value)
+												<div class="p-3 p-md-4 mb-3 mb-md-2rem remove-parent" style="border: 1px dashed #e4e5eb;">
+													<div class="row gutters-5">
+														<!-- Image -->
+														<div class="col-md-5">
+															<div class="form-group mb-md-0">
+																<div class="input-group" data-toggle="aizuploader" data-type="image">
+																	<div class="input-group-prepend">
+																		<div class="input-group-text bg-soft-secondary font-weight-medium">{{ translate('Browse')}}</div>
+																	</div>
+																	<div class="form-control file-amount">{{ translate('Choose File') }}</div>
+																	<input type="hidden" name="home_banner4_images[]" class="selected-files" value="{{ json_decode($home_banner4_images, true)[$key] }}">
+																</div>
+																<div class="file-preview box sm">
+																</div>
+															</div>
+														</div>
+														<!-- link -->
+														<div class="col-md">
+															<div class="form-group mb-md-0">
+																<input type="text" class="form-control" placeholder="http://" name="home_banner4_links[]" value="{{ isset(json_decode($home_banner4_links, true)[$key]) ? json_decode($home_banner4_links, true)[$key] : '' }}">
+															</div>
+														</div>
+														<!-- remove parent button -->
+														<div class="col-md-auto">
+															<div class="form-group mb-md-0">
+																<button type="button" class="mt-1 btn btn-icon btn-circle btn-sm btn-soft-danger" data-toggle="remove-parent" data-parent=".remove-parent">
+																	<i class="las la-times"></i>
+																</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											@endforeach
+										@endif
+									</div>
+
+									<!-- Add button -->
+									<div class="">
+										<button
+											type="button"
+											class="btn btn-block border hov-bg-soft-secondary fs-14 rounded-0 d-flex align-items-center justify-content-center" style="background: #fcfcfc;"
+											data-toggle="add-more"
+											data-content='
+											<div class="p-3 p-md-4 mb-3 mb-md-2rem remove-parent" style="border: 1px dashed #e4e5eb;">
+												<div class="row gutters-5">
+													<!-- Image -->
+													<div class="col-md-5">
+														<div class="form-group mb-md-0">
+															<div class="input-group" data-toggle="aizuploader" data-type="image">
+																<div class="input-group-prepend">
+																	<div class="input-group-text bg-soft-secondary font-weight-medium">{{ translate('Browse')}}</div>
+																</div>
+																<div class="form-control file-amount">{{ translate('Choose File') }}</div>
+																<input type="hidden" name="home_banner4_images[]" class="selected-files" value="">
+															</div>
+															<div class="file-preview box sm">
+															</div>
+														</div>
+													</div>
+													<!-- link -->
+													<div class="col-md">
+														<div class="form-group mb-md-0 mb-0">
+															<input type="text" class="form-control" placeholder="http://" name="home_banner4_links[]" value="">
+														</div>
+													</div>
+													<!-- remove parent button -->
+													<div class="col-md-auto">
+														<div class="form-group mb-md-0">
+															<button type="button" class="mt-1 btn btn-icon btn-circle btn-sm btn-soft-danger" data-toggle="remove-parent" data-parent=".remove-parent">
+																<i class="las la-times"></i>
+															</button>
+														</div>
+													</div>
+												</div>
+											</div>'
+											data-target=".home-banner4-target">
+											<i class="las la-2x text-success la-plus-circle"></i>
+											<span class="ml-2">{{ translate('Add New') }}</span>
+										</button>
+									</div>
+								</div>
+								<!-- Save Button -->
+								<div class="mt-4 text-right">
+									<button type="submit" class="btn btn-success w-230px btn-md rounded-2 fs-14 fw-700 shadow-success">{{ translate('Save') }}</button>
+								</div>
+							</div>
+						</form>
+					</div>
+
+
+					<!-- Banner Level 5 -->
+					<div class="tab-pane fade" id="banner_5" role="tabpanel" aria-labelledby="banner-5-tab">
+						<form action="{{ route('business_settings.update') }}" method="POST" enctype="multipart/form-data">
+							@csrf
+							<input type="hidden" name="tab" value="banner_5">
+							<input type="hidden" name="types[][{{ $lang }}]" value="home_banner5_images">
+							<input type="hidden" name="types[][{{ $lang }}]" value="home_banner5_links">
+
+							<div class="bg-white p-3 p-sm-2rem">
+								<div class="w-100">
+									<label class="col-from-label fs-13 fw-500 mb-0">{{ translate('Banner & Links (Max 3)') }}</label>
+                                    <div class="small text-muted mb-3">{{ translate("Minimum dimensions required: 432px width X 655px height.") }}</div>
+
+									<!-- Images & links -->
+									<div class="home-banner5-target">
+										@php
+											$home_banner5_images = get_setting('home_banner5_images', null, $lang);
+											$home_banner5_links = get_setting('home_banner5_links', null, $lang);
+										@endphp
+										@if ($home_banner5_images != null)
+											@foreach (json_decode($home_banner5_images, true) as $key => $value)
+												<div class="p-3 p-md-4 mb-3 mb-md-2rem remove-parent" style="border: 1px dashed #e4e5eb;">
+													<div class="row gutters-5">
+														<!-- Image -->
+														<div class="col-md-5">
+															<div class="form-group mb-md-0">
+																<div class="input-group" data-toggle="aizuploader" data-type="image">
+																	<div class="input-group-prepend">
+																		<div class="input-group-text bg-soft-secondary font-weight-medium">{{ translate('Browse')}}</div>
+																	</div>
+																	<div class="form-control file-amount">{{ translate('Choose File') }}</div>
+																	<input type="hidden" name="home_banner5_images[]" class="selected-files" value="{{ json_decode($home_banner5_images, true)[$key] }}">
+																</div>
+																<div class="file-preview box sm">
+																</div>
+															</div>
+														</div>
+														<!-- link -->
+														<div class="col-md">
+															<div class="form-group mb-md-0">
+																<input type="text" class="form-control" placeholder="http://" name="home_banner5_links[]" value="{{ isset(json_decode($home_banner5_links, true)[$key]) ? json_decode($home_banner5_links, true)[$key] : '' }}">
+															</div>
+														</div>
+														<!-- remove parent button -->
+														<div class="col-md-auto">
+															<div class="form-group mb-md-0">
+																<button type="button" class="mt-1 btn btn-icon btn-circle btn-sm btn-soft-danger" data-toggle="remove-parent" data-parent=".remove-parent">
+																	<i class="las la-times"></i>
+																</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											@endforeach
+										@endif
+									</div>
+
+									<!-- Add button -->
+									<div class="">
+										<button
+											type="button"
+											class="btn btn-block border hov-bg-soft-secondary fs-14 rounded-0 d-flex align-items-center justify-content-center" style="background: #fcfcfc;"
+											data-toggle="add-more"
+											data-content='
+											<div class="p-3 p-md-4 mb-3 mb-md-2rem remove-parent" style="border: 1px dashed #e4e5eb;">
+												<div class="row gutters-5">
+													<!-- Image -->
+													<div class="col-md-5">
+														<div class="form-group mb-md-0">
+															<div class="input-group" data-toggle="aizuploader" data-type="image">
+																<div class="input-group-prepend">
+																	<div class="input-group-text bg-soft-secondary font-weight-medium">{{ translate('Browse')}}</div>
+																</div>
+																<div class="form-control file-amount">{{ translate('Choose File') }}</div>
+																<input type="hidden" name="home_banner5_images[]" class="selected-files" value="">
+															</div>
+															<div class="file-preview box sm">
+															</div>
+														</div>
+													</div>
+													<!-- link -->
+													<div class="col-md">
+														<div class="form-group mb-md-0 mb-0">
+															<input type="text" class="form-control" placeholder="http://" name="home_banner5_links[]" value="">
+														</div>
+													</div>
+													<!-- remove parent button -->
+													<div class="col-md-auto">
+														<div class="form-group mb-md-0">
+															<button type="button" class="mt-1 btn btn-icon btn-circle btn-sm btn-soft-danger" data-toggle="remove-parent" data-parent=".remove-parent">
+																<i class="las la-times"></i>
+															</button>
+														</div>
+													</div>
+												</div>
+											</div>'
+											data-target=".home-banner5-target">
+											<i class="las la-2x text-success la-plus-circle"></i>
+											<span class="ml-2">{{ translate('Add New') }}</span>
+										</button>
+									</div>
+								</div>
+								<!-- Save Button -->
+								<div class="mt-4 text-right">
+									<button type="submit" class="btn btn-success w-230px btn-md rounded-2 fs-14 fw-700 shadow-success">{{ translate('Save') }}</button>
+								</div>
+							</div>
+						</form>
+					</div>
+
+					<!-- Banner Level 6 -->
+					<div class="tab-pane fade" id="banner_6" role="tabpanel" aria-labelledby="banner-6-tab">
+						<form action="{{ route('business_settings.update') }}" method="POST" enctype="multipart/form-data">
+							@csrf
+							<input type="hidden" name="tab" value="banner_6">
+							<input type="hidden" name="types[][{{ $lang }}]" value="home_banner6_images">
+							<input type="hidden" name="types[][{{ $lang }}]" value="home_banner6_links">
+
+							<div class="bg-white p-3 p-sm-2rem">
+								<div class="w-100">
+									<label class="col-from-label fs-13 fw-500 mb-0">{{ translate('Banner & Links (Max 3)') }}</label>
+                                    <div class="small text-muted mb-3">{{ translate("Minimum dimensions required: 432px width X 655px height.") }}</div>
+
+									<!-- Images & links -->
+									<div class="home-banner6-target">
+										@php
+											$home_banner6_images = get_setting('home_banner6_images', null, $lang);
+											$home_banner6_links = get_setting('home_banner6_links', null, $lang);
+										@endphp
+										@if ($home_banner6_images != null)
+											@foreach (json_decode($home_banner6_images, true) as $key => $value)
+												<div class="p-3 p-md-4 mb-3 mb-md-2rem remove-parent" style="border: 1px dashed #e4e5eb;">
+													<div class="row gutters-5">
+														<!-- Image -->
+														<div class="col-md-5">
+															<div class="form-group mb-md-0">
+																<div class="input-group" data-toggle="aizuploader" data-type="image">
+																	<div class="input-group-prepend">
+																		<div class="input-group-text bg-soft-secondary font-weight-medium">{{ translate('Browse')}}</div>
+																	</div>
+																	<div class="form-control file-amount">{{ translate('Choose File') }}</div>
+																	<input type="hidden" name="home_banner6_images[]" class="selected-files" value="{{ json_decode($home_banner6_images, true)[$key] }}">
+																</div>
+																<div class="file-preview box sm">
+																</div>
+															</div>
+														</div>
+														<!-- link -->
+														<div class="col-md">
+															<div class="form-group mb-md-0">
+																<input type="text" class="form-control" placeholder="http://" name="home_banner6_links[]" value="{{ isset(json_decode($home_banner6_links, true)[$key]) ? json_decode($home_banner6_links, true)[$key] : '' }}">
+															</div>
+														</div>
+														<!-- remove parent button -->
+														<div class="col-md-auto">
+															<div class="form-group mb-md-0">
+																<button type="button" class="mt-1 btn btn-icon btn-circle btn-sm btn-soft-danger" data-toggle="remove-parent" data-parent=".remove-parent">
+																	<i class="las la-times"></i>
+																</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											@endforeach
+										@endif
+									</div>
+
+									<!-- Add button -->
+									<div class="">
+										<button
+											type="button"
+											class="btn btn-block border hov-bg-soft-secondary fs-14 rounded-0 d-flex align-items-center justify-content-center" style="background: #fcfcfc;"
+											data-toggle="add-more"
+											data-content='
+											<div class="p-3 p-md-4 mb-3 mb-md-2rem remove-parent" style="border: 1px dashed #e4e5eb;">
+												<div class="row gutters-5">
+													<!-- Image -->
+													<div class="col-md-5">
+														<div class="form-group mb-md-0">
+															<div class="input-group" data-toggle="aizuploader" data-type="image">
+																<div class="input-group-prepend">
+																	<div class="input-group-text bg-soft-secondary font-weight-medium">{{ translate('Browse')}}</div>
+																</div>
+																<div class="form-control file-amount">{{ translate('Choose File') }}</div>
+																<input type="hidden" name="home_banner6_images[]" class="selected-files" value="">
+															</div>
+															<div class="file-preview box sm">
+															</div>
+														</div>
+													</div>
+													<!-- link -->
+													<div class="col-md">
+														<div class="form-group mb-md-0 mb-0">
+															<input type="text" class="form-control" placeholder="http://" name="home_banner6_links[]" value="">
+														</div>
+													</div>
+													<!-- remove parent button -->
+													<div class="col-md-auto">
+														<div class="form-group mb-md-0">
+															<button type="button" class="mt-1 btn btn-icon btn-circle btn-sm btn-soft-danger" data-toggle="remove-parent" data-parent=".remove-parent">
+																<i class="las la-times"></i>
+															</button>
+														</div>
+													</div>
+												</div>
+											</div>'
+											data-target=".home-banner6-target">
+											<i class="las la-2x text-success la-plus-circle"></i>
+											<span class="ml-2">{{ translate('Add New') }}</span>
+										</button>
+									</div>
+								</div>
+								<!-- Save Button -->
+								<div class="mt-4 text-right">
+									<button type="submit" class="btn btn-success w-230px btn-md rounded-2 fs-14 fw-700 shadow-success">{{ translate('Save') }}</button>
+								</div>
+							</div>
+						</form>
+					</div>
+
+
+					<!-- Category Wise Products -->
+					<div class="tab-pane fade" id="home_categories" role="tabpanel" aria-labelledby="home-categories-tab">
+						<form action="{{ route('business_settings.update') }}" method="POST" enctype="multipart/form-data">
+							@csrf
+							<input type="hidden" name="tab" value="home_categories">
+							<div class="bg-white p-3 p-sm-2rem">
+								<div class="w-100">
+									<label class="col-from-label fs-13 fw-500 mb-3">{{ translate('Categories') }}</label>
+									<div class="home-categories-target">
+										<input type="hidden" name="types[]" value="home_categories">
+										@php $home_categories = get_setting('home_categories'); @endphp
+										@if ($home_categories != null)
+											@php $categories = \App\Models\Category::where('parent_id', 0)->with('childrenCategories')->get(); @endphp
+											@foreach (json_decode($home_categories, true) as $key => $value)
+												<div class="p-3 p-md-4 mb-3 mb-md-2rem remove-parent" style="border: 1px dashed #e4e5eb;">
+													<div class="row gutters-5">
+														<div class="col">
+															<div class="form-group mb-0">
+																<select class="form-control aiz-selectpicker" name="home_categories[]" data-live-search="true" data-selected={{ $value }} required>
+																	@foreach ($categories as $category)
+																		<option value="{{ $category->id }}">{{ $category->getTranslation('name') }}</option>
+																		@foreach ($category->childrenCategories as $childCategory)
+																			@include('categories.child_category', ['child_category' => $childCategory])
+																		@endforeach
+																	@endforeach
+																</select>
+															</div>
+														</div>
+														<div class="col-auto">
+															<button type="button" class="mt-1 btn btn-icon btn-circle btn-sm btn-soft-danger" data-toggle="remove-parent" data-parent=".remove-parent">
+																<i class="las la-times"></i>
+															</button>
+														</div>
+													</div>
+												</div>
+											@endforeach
+										@endif
+									</div>
+
+									<!-- Add button -->
+									<div class="">
+										<button
+											type="button"
+											class="btn btn-block border hov-bg-soft-secondary fs-14 rounded-0 d-flex align-items-center justify-content-center" style="background: #fcfcfc;"
+											data-toggle="add-more"
+											data-content='
+											<div class="p-4 mb-3 mb-md-2rem remove-parent" style="border: 1px dashed #e4e5eb;">
+												<div class="row gutters-5">
+													<div class="col">
+														<div class="form-group mb-0">
+															<select class="form-control aiz-selectpicker" name="home_categories[]" data-live-search="true" required>
+																@foreach (\App\Models\Category::where('parent_id', 0)->with('childrenCategories')->get() as $category)
+																	<option value="{{ $category->id }}">{{ $category->getTranslation('name') }}</option>
+																	@foreach ($category->childrenCategories as $childCategory)
+																		@include('categories.child_category', ['child_category' => $childCategory])
+																	@endforeach
+																@endforeach
+															</select>
+														</div>
+													</div>
+													<div class="col-auto">
+														<button type="button" class="mt-1 btn btn-icon btn-circle btn-sm btn-soft-danger" data-toggle="remove-parent" data-parent=".remove-parent">
+															<i class="las la-times"></i>
+														</button>
+													</div>
+												</div>
+											</div>'
+											data-target=".home-categories-target">
+											<i class="las la-2x text-success la-plus-circle"></i>
+											<span class="ml-2">{{ translate('Add New') }}</span>
+										</button>
+									</div>
+								</div>
+								<!-- Save Button -->
+								<div class="mt-4 text-right">
+									<button type="submit" class="btn btn-success w-230px btn-md rounded-2 fs-14 fw-700 shadow-success">{{ translate('Save') }}</button>
+								</div>
+							</div>
+						</form>
+					</div>
+
 					@if(addon_is_activated('auction'))
 					<!-- Auction Banner -->
 					<div class="tab-pane fade" id="auction" role="tabpanel" aria-labelledby="auction-tab">
@@ -973,4 +1572,5 @@
 			});
 		});
 	</script>
+	
 @endsection
