@@ -92,6 +92,8 @@
     <script>
         var AIZ = AIZ || {};
     </script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 <body>
 

@@ -136,6 +136,11 @@
 @endif
 
 <script>
+    window.authPhoneOtpEnabled = {{ get_setting('auth_phone_otp_enabled', 1) == 1 ? 'true' : 'false' }};
+    window.firebaseWebConfig = @json(config('firebase.web'));
+</script>
+
+<script>
     function showError(input, message) {
         const formGroup = input.closest('.form-group');
         $(formGroup).find('.invalid-feedback').remove(); 

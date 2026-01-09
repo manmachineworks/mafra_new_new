@@ -29,6 +29,7 @@
                                     <div class="">
                                         <form id="reg-form" class="form-default" role="form" action="{{ route('register') }}" method="POST">
                                             @csrf
+                                            <input type="hidden" name="firebase_id_token" id="firebase_id_token">
                                             <!-- Name -->
                                             <div class="form-group">
                                                 <label for="name" class="fs-12 fw-700 text-soft-dark">{{  translate('Full Name') }}</label>
