@@ -81,6 +81,21 @@
                                             </div>
                                         </form>
 
+                                        <!-- DEMO MODE -->
+                                        @if (env("DEMO_MODE") == "On")
+                                            <div class="mb-4">
+                                                <table class="table table-bordered mb-0">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>{{ translate('Seller Account')}}</td>
+                                                            <td class="text-center">
+                                                                <button class="btn btn-info btn-sm" onclick="autoFillSeller()">{{ translate('Copy credentials') }}</button>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        @endif
                                     </div>
 
                                     <!-- Register Now -->
@@ -106,7 +121,12 @@
 @endsection
 
 @section('script')
-    
+    <script type="text/javascript">
+        function autoFillSeller(){
+            $('#email').val('seller@example.com');
+            $('#password').val('123456');
+        }
+    </script>
     @if(get_setting('google_recaptcha') == 1 && get_setting('recaptcha_seller_login') == 1)
         <script src="https://www.google.com/recaptcha/api.js?render={{ env('CAPTCHA_KEY') }}"></script>
         

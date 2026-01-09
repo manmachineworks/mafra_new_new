@@ -1,9 +1,6 @@
 @extends('backend.layouts.app')
 
 @section('content')
-    @php
-        $firebaseOtpEnabled = get_setting('firebase_otp_enabled') == 1 && env('FIREBASE_OTP_ENABLED', false);
-    @endphp
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
@@ -11,11 +8,6 @@
                     <h5 class="mb-0 h6">{{translate('SMS Templates')}}</h5>
                 </div>
                 <div class="card-body">
-                    @if($firebaseOtpEnabled)
-                        <div class="alert alert-info mb-0">
-                            {{ translate('Firebase OTP is enabled. Firebase will handle OTP delivery; SMS templates are disabled.') }}
-                        </div>
-                    @else
                     <div class="row">
                         <div class="col-3">
                             <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
@@ -75,7 +67,6 @@
                             </div>
                         </div>
                     </div>
-                    @endif
                 </div>
             </div>
         </div>

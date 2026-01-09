@@ -29,7 +29,11 @@
                                                 <label>{{translate('Amount')}} <span class="text-danger">*</span></label>
                                             </div>
                                             <div class="col-md-9">
+                                                @if(is_numeric($order_detail->gst_amount))
+                                                <input type="number" class="form-control mb-3 rounded-0" name="amount" placeholder="{{translate('Product Price')}}"  value="{{ round($order_detail->price + get_gst_by_price_and_rate($order_detail->price, $order_detail->gst_rate), 2) }}" readonly>
+                                                @else
                                                 <input type="number" class="form-control mb-3 rounded-0" name="amount" placeholder="{{translate('Product Price')}}" value="{{ $order_detail->price + $order_detail->tax }}" readonly>
+                                                @endif
                                             </div>
                                         </div>
                                         <div class="row">

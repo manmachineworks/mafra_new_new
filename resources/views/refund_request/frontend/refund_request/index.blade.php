@@ -39,7 +39,7 @@
                                           </td>
                                           <td class="fw-700" style="vertical-align: middle;">
                                               @if ($refund->orderDetail != null)
-                                                  {{single_price($refund->orderDetail->price)}}
+                                                  {{single_price($refund->refund_amount)}}
                                               @endif
                                           </td>
                                           <td class="text-right pr-0" style="vertical-align: middle;">

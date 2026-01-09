@@ -90,11 +90,13 @@ class OTPVerificationController extends Controller
                 return redirect()->route('home');
             } else {
                 flash("Password and confirm password didn't match")->warning();
-                return view('otp_systems.frontend.auth.'.get_setting('authentication_layout_select').'.reset_with_phone');
+                $country_code= $request['country_code'];
+                return view('otp_systems.frontend.auth.'.get_setting('authentication_layout_select').'.reset_with_phone', compact('phone','country_code'));
             }
         } else {
             flash("Verification code mismatch")->error();
-            return view('otp_systems.frontend.auth.'.get_setting('authentication_layout_select').'.reset_with_phone');
+            $country_code= $request['country_code'];
+            return view('otp_systems.frontend.auth.'.get_setting('authentication_layout_select').'.reset_with_phone', compact('phone','country_code'));
         }
     }
 

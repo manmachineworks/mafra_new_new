@@ -135,144 +135,36 @@
     </script> 
 @endif
 
-@php
-    $firebaseOtpEnabled = get_setting('firebase_otp_enabled') == 1 && env('FIREBASE_OTP_ENABLED', false);
-@endphp
-@if ($firebaseOtpEnabled)
-    <div id="firebase-recaptcha-container" class="d-none"></div>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+<script>
+    function showError(input, message) {
+        const formGroup = input.closest('.form-group');
+        $(formGroup).find('.invalid-feedback').remove(); 
+        $(input).removeClass('is-valid').addClass('is-invalid');
+        $(formGroup).append(`<div class="invalid-feedback d-block text-left">${message}</div>`);
+    }
 
-        const firebaseConfig = {
-            apiKey: "{{ env('FIREBASE_API_KEY') }}",
-            authDomain: "{{ env('FIREBASE_AUTH_DOMAIN') }}",
-            projectId: "{{ env('FIREBASE_PROJECT_ID') }}",
-            storageBucket: "{{ env('FIREBASE_STORAGE_BUCKET') }}",
-            messagingSenderId: "{{ env('FIREBASE_MESSAGING_SENDER_ID') }}",
-            appId: "{{ env('FIREBASE_APP_ID') }}",
-        };
 
-        const configMissing = !firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId;
-        if (configMissing) {
-            console.warn('Firebase OTP config is incomplete.');
+    document.addEventListener("input", function(e) {
+        const input = e.target;
+        if (input.hasAttribute("phone-number")) {
+            const formGroup = input.closest('.form-group');
+            const original = input.value;
+            const numeric = original.replace(/[^0-9]/g, "");
+
+            // Update input
+            input.value = numeric;
+            // Remove old errors
+            $(formGroup).find('.invalid-feedback').remove();
+            $(input).removeClass('is-invalid');
+
+            // Show error if original != numeric
+            if (original !== numeric) {
+                $(input).addClass('is-invalid');
+                $(formGroup).append(`<div class="invalid-feedback d-block text-left">
+                    {{ translate('Please enter a valid phone number format') }}
+                </div>`);
+            }
         }
+    });
 
-        if (!configMissing) {
-            const firebaseApp = initializeApp(firebaseConfig);
-            const firebaseAuth = getAuth(firebaseApp);
-            firebaseAuth.useDeviceLanguage();
-
-            const firebaseOtpState = {
-                confirmation: null,
-                lastSentAt: 0,
-                cooldown: 60,
-            };
-
-            function recaptcha() {
-                if (window.firebaseRecaptcha) return window.firebaseRecaptcha;
-                window.firebaseRecaptcha = new RecaptchaVerifier(firebaseAuth, 'firebase-recaptcha-container', {
-                    size: 'invisible',
-                });
-                return window.firebaseRecaptcha;
-            }
-
-            async function sendFirebaseOtp(phone, triggerBtn) {
-                const now = Date.now();
-                if (now - firebaseOtpState.lastSentAt < firebaseOtpState.cooldown * 1000) {
-                    AIZ.plugins.notify('info', '{{ translate('Please wait before requesting another OTP.') }}');
-                    return;
-                }
-                try {
-                    triggerBtn?.setAttribute('disabled', 'disabled');
-                    firebaseOtpState.confirmation = await signInWithPhoneNumber(firebaseAuth, phone, recaptcha());
-                    firebaseOtpState.lastSentAt = now;
-                    AIZ.plugins.notify('success', '{{ translate('OTP sent successfully.') }}');
-                } catch (error) {
-                    console.error(error);
-                    AIZ.plugins.notify('danger', '{{ translate('Unable to send OTP. Please check the phone number.') }}');
-                } finally {
-                    triggerBtn?.removeAttribute('disabled');
-                }
-            }
-
-            async function verifyFirebaseOtp(code, formEl, otpInput) {
-                if (!firebaseOtpState.confirmation) {
-                    AIZ.plugins.notify('danger', '{{ translate('Please request an OTP first.') }}');
-                    return;
-                }
-                try {
-                    otpInput?.setAttribute('disabled', 'disabled');
-                    const result = await firebaseOtpState.confirmation.confirm(code);
-                    const idToken = await result.user.getIdToken();
-                    const payload = new URLSearchParams({
-                        id_token: idToken,
-                        _token: AIZ.data.csrf,
-                    });
-
-                    const response = await fetch('{{ route('firebase.verify-phone') }}', {
-                        method: 'POST',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: payload.toString(),
-                    });
-
-                    if (!response.ok) {
-                        const err = await response.json();
-                        throw new Error(err.message || 'Verification failed');
-                    }
-
-                    const data = await response.json();
-                    formEl.querySelectorAll('[name="firebase_id_token"]').forEach((input) => input.value = idToken);
-                    formEl.querySelectorAll('[name="firebase_verified_phone"]').forEach((input) => input.value = data.phone);
-                    formEl.querySelectorAll('[name="firebase_uid"]').forEach((input) => input.value = data.firebase_uid);
-
-                    formEl.querySelectorAll('.js-requires-otp').forEach((btn) => btn.removeAttribute('disabled'));
-                    AIZ.plugins.notify('success', '{{ translate('Phone verified. You can continue.') }}');
-                } catch (error) {
-                    console.error(error);
-                    AIZ.plugins.notify('danger', '{{ translate('Invalid OTP. Please try again.') }}');
-                } finally {
-                    otpInput?.removeAttribute('disabled');
-                }
-            }
-
-            document.addEventListener('click', function (e) {
-                const sendBtn = e.target.closest('.js-send-firebase-otp');
-                if (sendBtn) {
-                    const formSelector = sendBtn.getAttribute('data-target-form');
-                    const phoneSelector = sendBtn.getAttribute('data-phone-input');
-                    const otpWrapperSelector = sendBtn.getAttribute('data-otp-wrapper');
-                    const form = document.querySelector(formSelector);
-                    const phoneInput = document.querySelector(phoneSelector);
-                    if (!form || !phoneInput) return;
-
-                    const raw = phoneInput.value || '';
-                    if (!raw.trim()) {
-                        AIZ.plugins.notify('danger', '{{ translate('Enter a valid phone number before requesting OTP.') }}');
-                        return;
-                    }
-                    const normalized = raw.startsWith('+') ? raw : `+${raw}`;
-                    sendFirebaseOtp(normalized, sendBtn).then(() => {
-                        if (otpWrapperSelector) {
-                            const otpWrapper = document.querySelector(otpWrapperSelector);
-                            otpWrapper?.classList.remove('d-none');
-                        }
-                    });
-                }
-
-                const verifyBtn = e.target.closest('.js-verify-firebase-otp');
-                if (verifyBtn) {
-                    const formSelector = verifyBtn.getAttribute('data-target-form');
-                    const otpSelector = verifyBtn.getAttribute('data-otp-input');
-                    const form = document.querySelector(formSelector);
-                    const otpInput = document.querySelector(otpSelector);
-                    if (!form || !otpInput) return;
-                    verifyFirebaseOtp(otpInput.value, form, otpInput);
-                }
-            });
-        }
-    </script>
-@endif
+</script>

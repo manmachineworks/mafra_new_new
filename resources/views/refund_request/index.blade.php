@@ -54,7 +54,7 @@
                         </td>
                         <td>
                             @if ($refund->orderDetail != null)
-                                {{single_price($refund->orderDetail->price)}}
+                                {{single_price($refund->refund_amount)}}
                             @endif
                         </td>
                         <td>

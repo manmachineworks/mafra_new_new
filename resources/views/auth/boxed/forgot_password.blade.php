@@ -1,9 +1,5 @@
 <!-- aiz-main-wrapper -->
 <div class="aiz-main-wrapper d-flex flex-column justify-content-md-center bg-white">
-@php
-    $firebaseOtpEnabled = get_setting('firebase_otp_enabled') == 1 && env('FIREBASE_OTP_ENABLED', false);
-    $firebaseOtpForgotRequired = $firebaseOtpEnabled && get_setting('firebase_otp_require_forgot') == 1;
-@endphp
     <section class="bg-white overflow-hidden">
         <div class="row">
             <div class="col-xxl-6 col-xl-9 col-lg-10 col-md-7 mx-auto py-lg-4">
@@ -40,17 +36,7 @@
                                         @if (addon_is_activated('otp_system'))
                                             <div class="form-group phone-form-group mb-1">
                                                 <label for="phone" class="fs-12 fw-700 text-soft-dark">{{  translate('Phone') }}</label>
-                                                <div class="input-group">
-                                                    <input type="tel" id="phone-code" class="form-control{{ $errors->has('phone') ? ' is-invalid' : '' }} rounded-0" value="{{ old('phone') }}" placeholder="" name="phone" autocomplete="off">
-                                                    @if($firebaseOtpEnabled)
-                                                        <button type="button" class="btn btn-outline-primary js-send-firebase-otp"
-                                                            data-target-form="#forgot-pass-form"
-                                                            data-phone-input="#phone-code"
-                                                            data-otp-wrapper="#forgot-otp-wrapper">
-                                                            {{ translate('Send OTP') }}
-                                                        </button>
-                                                    @endif
-                                                </div>
+                                                <input type="tel" phone-number id="phone-code" class="form-control{{ $errors->has('phone') ? ' is-invalid' : '' }} rounded-0" value="{{ old('phone') }}" placeholder="" name="phone" autocomplete="off">
                                             </div>
 
                                             <input type="hidden" name="country_code" value="">
@@ -90,25 +76,9 @@
                                             @endif
 
 
-                                        @if($firebaseOtpEnabled)
-                                            <div class="form-group mb-3 d-none" id="forgot-otp-wrapper">
-                                                <label class="form-label" for="forgot_verification_code">{{ translate('Verification Code') }}</label>
-                                                <div class="input-group">
-                                                    <input type="text" class="form-control" id="forgot_verification_code" placeholder="{{ translate('OTP Code') }}" maxlength="6">
-                                                    <button class="btn btn-outline-primary js-verify-firebase-otp" type="button"
-                                                        data-target-form="#forgot-pass-form" data-otp-input="#forgot_verification_code">
-                                                        {{ translate('Verify OTP') }}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <input type="hidden" name="firebase_id_token" id="firebase_forgot_id_token">
-                                            <input type="hidden" name="firebase_verified_phone" id="firebase_forgot_verified_phone">
-                                            <input type="hidden" name="firebase_uid" id="firebase_forgot_uid">
-                                        @endif
-
                                         <!-- Submit Button -->
                                         <div class="mb-4 mt-4">
-                                            <button type="submit" class="btn btn-primary btn-block fw-700 fs-14 rounded-0 js-requires-otp">{{ translate('Send Password Reset Code') }}</button>
+                                            <button type="submit" class="btn btn-primary btn-block fw-700 fs-14 rounded-0">{{ translate('Send Password Reset Code') }}</button>
                                         </div>
                                     </form>
                                 </div>

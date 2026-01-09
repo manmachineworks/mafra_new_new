@@ -7,7 +7,13 @@
 @endsection
 
 @section('script')
-   
+    <script type="text/javascript">
+        function autoFillAdmin(){
+            $('#email').val('admin@example.com');
+            $('#password').val('123456');
+        }
+    </script>
+
      @if(get_setting('google_recaptcha') == 1 && get_setting('recaptcha_admin_login') == 1)
         <script src="https://www.google.com/recaptcha/api.js?render={{ env('CAPTCHA_KEY') }}"></script>
         

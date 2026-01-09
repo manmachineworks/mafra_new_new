@@ -48,7 +48,12 @@ class RefundRequestController extends Controller
         $refund->images = $request->images;
         $refund->admin_approval = 0;
         $refund->admin_seen = 0;
-        $refund->refund_amount = $order_detail->price + $order_detail->tax;
+        if(is_numeric($order_detail->gst_amount)){
+             $refund->refund_amount = round($order_detail->price + get_gst_by_price_and_rate($order_detail->price, $order_detail->gst_rate), 2);
+        }else{
+            $refund->refund_amount = $order_detail->price + $order_detail->tax;
+        }
+        
         $refund->refund_status = 0;
         if ($refund->save()) {
 

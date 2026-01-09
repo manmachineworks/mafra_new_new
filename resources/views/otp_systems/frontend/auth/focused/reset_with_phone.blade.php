@@ -35,14 +35,13 @@
 
                                         <!-- Phone -->
                                         <div class="form-group">
-                                            <input id="phone-code" type="text" class="form-control" name="phone"
-                                                placeholder="{{ translate('Phone Number') }}" required>
+                                            <input id="phone-code" type="tel" phone-number class="form-control" name="phone" @if(!empty($phone ?? null)) readonly @endif value="{{ $phone ?? '' }}" placeholder="{{ translate('Phone Number') }}" required>
                                             <span class="invalid-phone-feedback text-danger" role="alert">
             
                                             </span>
                                         </div>
             
-                                        <input type="hidden" id="country_code" name="country_code" value="">
+                                        <input type="hidden" id="country_code" name="country_code" value="{{ $country_code ?? '' }}">
                                         
                                         <!-- Code -->
                                         <div class="form-group">

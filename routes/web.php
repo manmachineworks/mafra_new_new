@@ -55,7 +55,6 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\SizeChartController;
 use App\Http\Controllers\ProductViewController;
 use App\Http\Controllers\Webhook\ShiprocketWebhookController;
-use App\Http\Controllers\Auth\FirebaseOtpController;
 
 /*
   |--------------------------------------------------------------------------
@@ -201,12 +200,6 @@ Route::post('/language', [LanguageController::class, 'changeLanguage'])->name('l
 
 // Currency Switch
 Route::post('/currency', [CurrencyController::class, 'changeCurrency'])->name('currency.change');
-
-// Firebase OTP verification
-Route::middleware('throttle:10,1')->group(function () {
-    Route::post('/firebase/verify-phone', [FirebaseOtpController::class, 'verifyPhone'])->name('firebase.verify-phone');
-    Route::post('/firebase/link-phone', [FirebaseOtpController::class, 'attachPhoneToUser'])->middleware('auth')->name('firebase.link-phone');
-});
 
 // Size Chart Show
 Route::get('/size-charts-show/{id}', [SizeChartController::class, 'show'])->name('size-charts-show');
