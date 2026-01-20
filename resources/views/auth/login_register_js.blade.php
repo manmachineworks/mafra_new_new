@@ -143,10 +143,40 @@
 
             // Check Recaptcha
             if (!window.recaptchaVerifier) {
-                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                    'size': 'invisible'
-                });
+                // Using 'normal' size (visible) to avoid invisible reCAPTCHA issues on localhost
+                try {
+                    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                        'size': 'normal',
+                        'callback': function (response) {
+                            // reCAPTCHA solved
+                            // we could enable the button here or auto-send
+                        },
+                        'expired-callback': function () {
+                            // Response expired. Ask user to solve reCAPTCHA again.
+                            AIZ.plugins.notify('warning', '{{ translate('reCAPTCHA expired. Please solve it again.') }}');
+                            window.recaptchaVerifier.reset();
+                        }
+                    });
+
+                    window.recaptchaVerifier.render().then(function (widgetId) {
+                        window.recaptchaWidgetId = widgetId;
+                    });
+                } catch (e) {
+                    console.error("Recaptcha Init Error: ", e);
+                    // If it's already rendered, maybe we just reset it?
+                    // In dev, sometimes hot-reload causes issues, but page refresh clears it.
+                    if (window.recaptchaVerifier) {
+                        window.recaptchaVerifier.clear();
+                        $('#recaptcha-container').empty();
+                    }
+                }
             }
+
+            // If the widget is visible but not solved, signInWithPhoneNumber might error or wait. 
+            // Better to let the user solve it. 
+            // Ideally we show the widget, wait for callback, THEN call signIn. 
+            // But Firebase SDK allows calling it directly and it handles the flow.
+            // Let's rely on standard SDK behavior.
 
             var phoneNumber = "+" + countryCode + phone;
 
@@ -161,11 +191,33 @@
 
                 }).catch(function (error) {
                     $('.submit-button').prop('disabled', false).html('{{ translate('Get OTP') }}');
-                    AIZ.plugins.notify('danger', error.message);
-                    console.error(error);
+
+                    var errorMessage = error.message;
+                    if (error.code === 'auth/invalid-app-credential') {
+                        errorMessage = '{{ translate('Domain not authorized or reCAPTCHA configuration error. Check Firebase Console > Authorized Domains and ensure localhost is added.') }}';
+                    } else if (error.code === 'auth/too-many-requests') {
+                        errorMessage = '{{ translate('Too many requests. Please try again later.') }}';
+                    } else if (error.code === 'auth/captcha-check-failed') {
+                        errorMessage = '{{ translate('reCAPTCHA check failed. Please try again.') }}';
+                    }
+
+                    AIZ.plugins.notify('danger', errorMessage);
+                    console.error("Firebase Error:", error);
+
+                    // Reset reCAPTCHA on error so user can try again
                     if (window.recaptchaVerifier) {
-                        window.recaptchaVerifier.clear();
-                        window.recaptchaVerifier = null;
+                        try {
+                            window.recaptchaVerifier.render().then(function (widgetId) {
+                                grecaptcha.reset(widgetId);
+                            });
+                        } catch (e) {
+                            // verify might not be rendered yet or already cleared
+                            // window.recaptchaVerifier.clear(); // This removes it from DOM
+                            // Better to just empty the container and nullify if we want a fresh start
+                            window.recaptchaVerifier.clear();
+                            window.recaptchaVerifier = null;
+                            $('#recaptcha-container').empty();
+                        }
                     }
                 });
 

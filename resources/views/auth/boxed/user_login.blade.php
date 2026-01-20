@@ -181,22 +181,196 @@
 
 @section('script')
     <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "{{ env('FIREBASE_WEB_API_KEY') }}",
+            authDomain: "{{ env('FIREBASE_WEB_AUTH_DOMAIN') }}",
+            projectId: "{{ env('FIREBASE_WEB_PROJECT_ID') }}",
+            storageBucket: "{{ env('FIREBASE_WEB_PROJECT_ID') }}.appspot.com",
+            messagingSenderId: "{{ env('FIREBASE_WEB_MESSAGING_SENDER_ID') }}",
+            appId: "{{ env('FIREBASE_WEB_APP_ID') }}"
+        };
+
+        console.log('Firebase Config:', firebaseConfig); // Debug
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        auth.languageCode = '{{ app()->getLocale() }}';
+
+        // State variables
+        let confirmationResult = null;
+        let isOtpMode = false;
+
+        // Initialize Recaptcha
+        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+            'size': 'invisible',
+            'callback': (response) => {
+                // reCAPTCHA solved, allow signInWithPhoneNumber.
+                sendOTP();
+            }
+        });
+
+        function switchLoginMode(mode) {
+            isOtpMode = (mode === 'otp');
+            
+            // Tab styling
+            if (isOtpMode) {
+                $('#tab-password').removeClass('border-primary border-width-2 text-primary').addClass('text-muted');
+                $('#tab-otp').addClass('border-primary border-width-2 text-primary').removeClass('text-muted');
+                
+                // Hide Password Logic
+                $('.password-login-block').addClass('d-none');
+                $('.email-form-group').addClass('d-none');
+                
+                // Show Phone Input (Force Phone)
+                $('.phone-form-group').removeClass('d-none');
+                $('#btn-use-phone').addClass('active');
+                $('#btn-use-email').removeClass('active').addClass('d-none'); // Hide email toggle in OTP mode
+                $('#btn-use-phone').removeClass('d-none');
+                
+                // Update Button Text
+                $('.submit-button').text("{{ translate('Get OTP') }}");
+                $('.submit-button').attr('type', 'button');
+                $('.submit-button').attr('onclick', 'handleOtpFlow()');
+            } else {
+                $('#tab-otp').removeClass('border-primary border-width-2 text-primary').addClass('text-muted');
+                $('#tab-password').addClass('border-primary border-width-2 text-primary').removeClass('text-muted');
+                
+                // Show Password Logic
+                $('.password-login-block').removeClass('d-none');
+                $('.otp-form-group').addClass('d-none');
+                
+                // Reset Toggle
+                $('#btn-use-email').removeClass('d-none');
+                toggleEmailPhone('phone'); // Default back to phone but allow email
+                
+                // Reset Button
+                $('.submit-button').text("{{ translate('Login') }}");
+                $('.submit-button').attr('type', 'submit');
+                $('.submit-button').removeAttr('onclick');
+            }
+        }
+
+        function toggleEmailPhone(type) {
+            if (isOtpMode) return; // Disable toggle in OTP mode
+
+            if (type === 'phone') {
+                $('.phone-form-group').removeClass('d-none');
+                $('.email-form-group').addClass('d-none');
+                $('#btn-use-phone').addClass('active');
+                $('#btn-use-email').removeClass('active');
+            } else {
+                $('.phone-form-group').addClass('d-none');
+                $('.email-form-group').removeClass('d-none');
+                $('#btn-use-phone').removeClass('active');
+                $('#btn-use-email').addClass('active');
+            }
+        }
+
+        function handleOtpFlow() {
+            if (!confirmationResult) {
+                sendOTP();
+            } else {
+                verifyOTP();
+            }
+        }
+
+        function sendOTP() {
+            const phoneNumber = "+{{ $country_code ?? '91' }}" + $('#phone-code').val(); // Adjust country code logic as needed
+            // Currently hardcoding country code prefix if not in input
+            // Better to use the hidden country_code input if populated, or assume user enters full number
+            // Let's grab the country code from the hidden input if available, else default
+            
+            // IMPORTANT: If 'phone-code' has the full number, use it. 
+            // The template suggests `name="country_code"` exists line 68. 
+            // Assuming the input `phone-code` is just the number.
+            
+            const fullPhoneNumber = "+" + ($('input[name=country_code]').val() || '91') + $('#phone-code').val();
+
+            $('.submit-button').prop('disabled', true).text("{{ translate('Sending...') }}");
+
+            auth.signInWithPhoneNumber(fullPhoneNumber, window.recaptchaVerifier)
+                .then((result) => {
+                    confirmationResult = result;
+                    $('.otp-form-group').removeClass('d-none');
+                    $('.phone-form-group').addClass('d-none'); // Hide phone input to prevent editing
+                    $('.submit-button').text("{{ translate('Verify & Login') }}");
+                    $('.submit-button').prop('disabled', false);
+                    AIZ.plugins.notify('success', "{{ translate('OTP Sent Successfully') }}");
+                }).catch((error) => {
+                    console.error("Error during signInWithPhoneNumber", error);
+                    $('.submit-button').prop('disabled', false).text("{{ translate('Get OTP') }}");
+                    window.recaptchaVerifier.render().then(function(widgetId) {
+                        grecaptcha.reset(widgetId);
+                    });
+                    AIZ.plugins.notify('danger', error.message);
+                });
+        }
+
+        function verifyOTP() {
+            const code = $('#otp_code').val();
+            if (!code) {
+                 AIZ.plugins.notify('warning', "{{ translate('Please enter the OTP') }}");
+                 return;
+            }
+
+            $('.submit-button').prop('disabled', true).text("{{ translate('Verifying...') }}");
+
+            confirmationResult.confirm(code).then((result) => {
+                const user = result.user;
+                user.getIdToken().then((idToken) => {
+                    $('#firebase_id_token').val(idToken);
+                    $('#firebase_verified_phone').val(user.phoneNumber);
+                    
+                    // Submit the form properly
+                    // We need to switch button type back to submit or trigger submit()
+                    // But since we are inside a button click handler, let's just submit the form object
+                    document.getElementById('user-login-form').submit();
+                });
+            }).catch((error) => {
+                console.error("Error during confirm", error);
+                $('.submit-button').prop('disabled', false).text("{{ translate('Verify & Login') }}");
+                AIZ.plugins.notify('danger', "{{ translate('Invalid OTP') }}");
+            });
+        }
+
+        // Auto-fill for demo (optional, keeping existing logic)
         function autoFillCustomer() {
             $('#email').val('customer@example.com');
             $('#password').val('123456');
         }
+
+
+        $(document).ready(function() {
+            // Default setup
+            switchLoginMode('password');
+            
+            // If country code script isn't loaded, maybe hardcode '91' logic or rely on user
+             $('input[name=country_code]').val('91'); // Default fallback
+        });
     </script>
 
     @if(get_setting('google_recaptcha') == 1 && get_setting('recaptcha_customer_login') == 1)
         <script src="https://www.google.com/recaptcha/api.js?render={{ env('CAPTCHA_KEY') }}"></script>
         <script type="text/javascript">
             document.getElementById('user-login-form').addEventListener('submit', function (e) {
-                // Only prevent default if we are NOT verifying OTP or standard submit is intended
-                // But standard submit is default.
-                // The issue is if we intervene with JS for OTP, this listener might conflict or need to be manual.
-                // For now, let's assume this handles the final submit.
+                // If this is a Firebase Login (Phone OTP), skip this generic reCAPTCHA handler
+                // The OTP verification flow manually requires calling submit() which usually bypasses this,
+                // but if we are here via a button click or other means:
+                if (document.getElementById('firebase_verified_phone') && document.getElementById('firebase_verified_phone').value !== '') {
+                    return;
+                }
+
+                // If in OTP mode but not verified yet, prevent default (this shouldn't happen via submit button as it is type=button)
+                if (isOtpMode && $('#firebase_verified_phone').val() === '') {
+                     e.preventDefault();
+                     return;
+                }
+
                 if (!this.checkValidity()) {
-                    // Let browser default handle invalid fields
                     return;
                 }
 

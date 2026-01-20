@@ -240,6 +240,15 @@ class LoginController extends Controller
     {
         $this->syncFirebaseVerification($request);
 
+        // If Firebase Verified, skip password and recaptcha validation
+        if ($request->filled('firebase_verified_phone')) {
+            $request->validate([
+                'email' => 'required_without:phone',
+                'phone' => 'required_without:email',
+            ]);
+            return;
+        }
+
         $request->validate([
             'email' => 'required_without:phone',
             'phone' => 'required_without:email',
@@ -264,14 +273,42 @@ class LoginController extends Controller
      */
     protected function attemptLogin(Request $request)
     {
-        if ($this->firebaseOtpLoginRequired() && $request->filled('firebase_verified_phone')) {
+        // Debug logging
+        \Log::info('Login Attempt', $request->only(['email', 'phone', 'firebase_verified_phone']));
+
+        // Check if Firebase is enabled and we have a verified phone (from token)
+        // We use firebaseOtpEnabled() because 'require' setting might be off in hybrid mode
+        if ($this->firebaseOtpEnabled() && $request->filled('firebase_verified_phone')) {
             // Logic for Firebase OTP login
             $phone = $request->input('firebase_verified_phone');
+            \Log::info('Attempting Firebase Login', ['phone' => $phone]);
 
             // Find user by phone
+            // Try exact match first
             $user = User::where('phone', $phone)->first();
 
+            // If not found, try varying formats
+            if (!$user) {
+                // Try removing '+'
+                $phoneNoPlus = str_replace('+', '', $phone);
+                $user = User::where('phone', $phoneNoPlus)->first();
+            }
+
+            if (!$user) {
+                // Try last 10 digits (common for India/US) if length is sufficient
+                $len = strlen($phone);
+                if ($len > 10) {
+                    $last10 = substr($phone, -10);
+                    $user = User::where('phone', $last10)->first();
+                }
+            }
+
+            // If still not found, perhaps try removing the country code if we can guess it
+            // (e.g. replace +91 with empty or 0)
+            // But last 10 digits usually covers the 'local' format case for mobile numbers.
+
             if ($user) {
+                \Log::info('User found for Firebase Login', ['id' => $user->id]);
                 // Determine if we should remember the user
                 $remember = $request->filled('remember');
 
@@ -287,6 +324,7 @@ class LoginController extends Controller
 
                 return true;
             }
+            \Log::warning('User NOT found for Firebase Login', ['phone' => $phone]);
             return false;
         }
 
@@ -462,24 +500,33 @@ class LoginController extends Controller
 
     private function syncFirebaseVerification(Request $request): void
     {
+        // SECURITY: Always clear the trusted field from input to prevent spoofing
+        $request->offsetUnset('firebase_verified_phone');
+        $request->offsetUnset('firebase_uid');
+
         if (!$this->firebaseOtpEnabled()) {
             return;
         }
 
         $token = $request->input('firebase_id_token');
-        $isPhoneFlow = $request->filled('phone') || $request->filled('firebase_verified_phone');
-        $required = $this->firebaseOtpLoginRequired() && $isPhoneFlow;
-        if ($required && !$token) {
+        $isPhoneFlow = $request->filled('phone');
+
+        // Only proceed if a token is actually provided
+        if ($token) {
+            try {
+                $verified = app(FirebaseTokenVerifier::class)->verify($token);
+                $request->merge([
+                    'firebase_verified_phone' => $verified['phone'],
+                    'firebase_uid' => $verified['uid'],
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Firebase Token Verification Failed: ' . $e->getMessage());
+                // If token is invalid, we do NOT set the verified phone. 
+            }
+        } elseif ($this->firebaseOtpLoginRequired() && $isPhoneFlow) {
+            // If required and no token, throw
             throw ValidationException::withMessages([
                 'phone' => translate('Phone verification via Firebase is required for login.'),
-            ]);
-        }
-
-        if ($token) {
-            $verified = app(FirebaseTokenVerifier::class)->verify($token);
-            $request->merge([
-                'firebase_verified_phone' => $verified['phone'],
-                'firebase_uid' => $verified['uid'],
             ]);
         }
     }
