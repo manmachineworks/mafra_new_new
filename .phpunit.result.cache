@@ -1,0 +1,1 @@
+{"version":2,"defects":[],"times":{"Tests\\Feature\\EmailOtpTest::test_can_send_otp_to_email":0.432,"Tests\\Feature\\EmailOtpTest::test_can_login_with_email_otp":0.139}}

@@ -185,7 +185,8 @@ class LoginController extends Controller
                 if ((get_email_template_data('customer_reg_email_to_admin', 'status') == 1)) {
                     try {
                         EmailUtility::customer_registration_email('customer_reg_email_to_admin', $newUser, null);
-                    } catch (\Exception $e) {}
+                    } catch (\Exception $e) {
+                    }
                 }
             }
         }
@@ -240,11 +241,11 @@ class LoginController extends Controller
         $this->syncFirebaseVerification($request);
 
         $request->validate([
-            'email'    => 'required_without:phone',
-            'phone'    => 'required_without:email',
+            'email' => 'required_without:phone',
+            'phone' => 'required_without:email',
             'password' => 'required|string',
-              'g-recaptcha-response' => [
-                Rule::when(get_setting('google_recaptcha') == 1  && get_setting($request['recaptcha_action']) == 1 , ['required', new Recaptcha()], ['sometimes'])
+            'g-recaptcha-response' => [
+                Rule::when(get_setting('google_recaptcha') == 1 && get_setting($request['recaptcha_action']) == 1, ['required', new Recaptcha()], ['sometimes'])
             ],
         ]);
     }
@@ -255,6 +256,46 @@ class LoginController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
+    /**
+     * Attempt to log the user into the application.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    protected function attemptLogin(Request $request)
+    {
+        if ($this->firebaseOtpLoginRequired() && $request->filled('firebase_verified_phone')) {
+            // Logic for Firebase OTP login
+            $phone = $request->input('firebase_verified_phone');
+
+            // Find user by phone
+            $user = User::where('phone', $phone)->first();
+
+            if ($user) {
+                // Determine if we should remember the user
+                $remember = $request->filled('remember');
+
+                // Login the user directly without password check
+                $this->guard()->login($user, $remember);
+
+                // Update firebase_uid if not already set or different
+                if ($request->filled('firebase_uid') && $user->firebase_uid !== $request->input('firebase_uid')) {
+                    $user->firebase_uid = $request->input('firebase_uid');
+                    $user->phone_verified_at = now();
+                    $user->save();
+                }
+
+                return true;
+            }
+            return false;
+        }
+
+        return $this->guard()->attempt(
+            $this->credentials($request),
+            $request->filled('remember')
+        );
+    }
+
     protected function credentials(Request $request)
     {
         $verifiedPhone = $request->get('firebase_verified_phone') ?: $request->get('phone');
@@ -276,16 +317,15 @@ class LoginController extends Controller
     public function authenticated()
     {
         if (session('temp_user_id') != null) {
-            if(auth()->user()->user_type == 'customer'){
+            if (auth()->user()->user_type == 'customer') {
                 Cart::where('temp_user_id', session('temp_user_id'))
-                ->update(
-                    [
-                        'user_id' => auth()->user()->id,
-                        'temp_user_id' => null
-                    ]
-                );
-            }
-            else {
+                    ->update(
+                        [
+                            'user_id' => auth()->user()->id,
+                            'temp_user_id' => null
+                        ]
+                    );
+            } else {
                 Cart::where('temp_user_id', session('temp_user_id'))->delete();
             }
             Session::forget('temp_user_id');
@@ -295,8 +335,8 @@ class LoginController extends Controller
             CoreComponentRepository::instantiateShopRepository();
             return redirect()->route('admin.dashboard');
         } elseif (auth()->user()->user_type == 'seller') {
-            
-            if (auth()->user()->shop->registration_approval  == 0) {
+
+            if (auth()->user()->shop->registration_approval == 0) {
                 auth()->logout();
                 flash(translate("Your seller account is under review. We will notify you once approved."));
                 return redirect()->route('home');

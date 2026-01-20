@@ -1,9 +1,7 @@
 <script src="{{ static_asset('assets/js/vendors.js') }}"></script>
 <script>
     (function ($) {
-        // USE STRICT
         "use strict";
-
         AIZ.data = {
             csrf: $('meta[name="csrf-token"]').attr("content"),
             appUrl: $('meta[name="app-url"]').attr("content"),
@@ -12,26 +10,15 @@
         AIZ.plugins = {
             notify: function (type = "dark", message = "") {
                 $.notify(
+                    { message: message },
                     {
-                        // options
-                        message: message,
-                    },
-                    {
-                        // settings
                         showProgressbar: true,
                         delay: 2500,
                         mouse_over: "pause",
-                        placement: {
-                            from: "bottom",
-                            align: "left",
-                        },
-                        animate: {
-                            enter: "animated fadeInUp",
-                            exit: "animated fadeOutDown",
-                        },
+                        placement: { from: "bottom", align: "left" },
+                        animate: { enter: "animated fadeInUp", exit: "animated fadeOutDown" },
                         type: type,
-                        template:
-                            '<div data-notify="container" class="aiz-notify alert alert-{0}" role="alert">' +
+                        template: '<div data-notify="container" class="aiz-notify alert alert-{0}" role="alert">' +
                             '<button type="button" aria-hidden="true" data-notify="dismiss" class="close"><i class="las la-times"></i></button>' +
                             '<span data-notify="message">{2}</span>' +
                             '<div class="progress" data-notify="progressbar">' +
@@ -42,15 +29,16 @@
                 );
             }
         };
-
     })(jQuery);
 </script>
+
 <script>
     @foreach (session('flash_notification', collect())->toArray() as $message)
         AIZ.plugins.notify('{{ $message['level'] }}', '{{ $message['message'] }}');
     @endforeach
 
-    $('.password-toggle').click(function(){
+    // Password Toggle
+    $('.password-toggle').click(function () {
         var $this = $(this);
         if ($this.siblings('input').attr('type') == 'password') {
             $this.siblings('input').attr('type', 'text');
@@ -60,116 +48,221 @@
             $this.removeClass('la-eye-slash').addClass('la-eye');
         }
     });
-</script>
 
-@if (addon_is_activated('otp_system'))
-    <script type="text/javascript">
-        // Country Code
-        var isPhoneShown = true,
-            countryData = window.intlTelInputGlobals.getCountryData(),
-            input = document.querySelector("#phone-code");
+    // Global State
+    var isPhoneShown = true;
+    var loginMode = 'password';
 
-        for (var i = 0; i < countryData.length; i++) {
-            var country = countryData[i];
-            if (country.iso2 == 'bd') {
-                country.dialCode = '88';
-            }
+    // Initialize Phone Input
+    var input = document.querySelector("#phone-code");
+    var iti = intlTelInput(input, {
+        separateDialCode: true,
+        utilsScript: "{{ static_asset('assets/js/intlTelutils.js') }}?1590403638580",
+        onlyCountries: @php echo get_active_countries()->pluck('code') @endphp,
+        customPlaceholder: function (selectedCountryPlaceholder, selectedCountryData) {
+            if (selectedCountryData.iso2 == 'bd') { return "01xxxxxxxxx"; }
+            return selectedCountryPlaceholder;
         }
+    });
 
-        var iti = intlTelInput(input, {
-            separateDialCode: true,
-            utilsScript: "{{ static_asset('assets/js/intlTelutils.js') }}?1590403638580",
-            onlyCountries: @php echo get_active_countries()->pluck('code') @endphp,
-            customPlaceholder: function(selectedCountryPlaceholder, selectedCountryData) {
-                if (selectedCountryData.iso2 == 'bd') {
-                    return "01xxxxxxxxx";
-                }
-                return selectedCountryPlaceholder;
-            }
-        });
+    var country = iti.getSelectedCountryData();
+    $('input[name=country_code]').val(country.dialCode);
 
+    input.addEventListener("countrychange", function (e) {
         var country = iti.getSelectedCountryData();
         $('input[name=country_code]').val(country.dialCode);
+    });
 
-        input.addEventListener("countrychange", function(e) {
-            // var currentMask = e.currentTarget.placeholder;
-            var country = iti.getSelectedCountryData();
-            $('input[name=country_code]').val(country.dialCode);
+    // Functions
+    function switchLoginMode(mode) {
+        loginMode = mode;
 
-        });
+        // Reset State
+        $('#otp_code').val('');
+        $('.submit-button').prop('disabled', false);
 
-        function toggleEmailPhone(el) {
-            if (isPhoneShown) {
-                $('.phone-form-group').addClass('d-none');
-                $('.email-form-group').removeClass('d-none');
-                $('input[name=phone]').val(null);
-                isPhoneShown = false;
-                $(el).html('*{{ translate('Use Phone Number Instead') }}');
+        if (mode === 'password') {
+            // UI Update
+            $('#tab-password').addClass('border-bottom border-primary border-width-2 text-primary').removeClass('text-muted');
+            $('#tab-otp').removeClass('border-bottom border-primary border-width-2 text-primary').addClass('text-muted');
 
-                $('.toggle-login-with-otp').addClass('d-none');
-
-            } else {
-                $('.phone-form-group').removeClass('d-none');
-                $('.email-form-group').addClass('d-none');
-                $('input[name=email]').val(null);
-                isPhoneShown = true;
-                $(el).html('<i>*{{ translate('Use Email Instead') }}</i>');
-
-                $('.toggle-login-with-otp').removeClass('d-none');
-            }
-            
-            $('.submit-button').html('{{ translate('Login') }}');
             $('.password-login-block').removeClass('d-none');
-            
-            var url = '{{ route('login') }}';
-            $('.loginForm').attr('action', url);
-        }
+            $('.otp-form-group').addClass('d-none');
 
-        function toggleLoginPassOTP() {
+            // Button & Action Update
+            $('.submit-button').html('{{ translate('Login') }}').attr('onclick', '').attr('type', 'submit');
+            $('.loginForm').attr('action', '{{ route('login') }}');
+
+        } else {
+            // UI Update
+            $('#tab-otp').addClass('border-bottom border-primary border-width-2 text-primary').removeClass('text-muted');
+            $('#tab-password').removeClass('border-bottom border-primary border-width-2 text-primary').addClass('text-muted');
+
             $('.password-login-block').addClass('d-none');
-            $('.submit-button').html('{{ translate('Login With OTP') }}');
+            $('.otp-form-group').addClass('d-none'); // Wait for sending
 
-            var url = '{{ route('send-otp') }}';
-            $('.loginForm').attr('action', url);
+            // Button & Action Update
+            $('.submit-button').html('{{ translate('Get OTP') }}').attr('onclick', 'sendOtp()').attr('type', 'button');
         }
-    </script> 
-@endif
+    }
+
+    function toggleEmailPhone(type) {
+        // Clear inputs on switch
+        $('#phone-code').val('');
+        $('#email').val('');
+
+        if (type === 'phone') {
+            isPhoneShown = true;
+            $('#btn-use-phone').addClass('active btn-primary text-white').removeClass('btn-outline-primary');
+            $('#btn-use-email').removeClass('active btn-primary text-white').addClass('btn-outline-primary');
+
+            $('.phone-form-group').removeClass('d-none');
+            $('.email-form-group').addClass('d-none');
+        } else {
+            isPhoneShown = false;
+            $('#btn-use-email').addClass('active btn-primary text-white').removeClass('btn-outline-primary');
+            $('#btn-use-phone').removeClass('active btn-primary text-white').addClass('btn-outline-primary');
+
+            $('.email-form-group').removeClass('d-none');
+            $('.phone-form-group').addClass('d-none');
+        }
+    }
+
+    function sendOtp() {
+        if (isPhoneShown) {
+            // PHONE OTP (Firebase)
+            var phone = $('#phone-code').val();
+            var countryCode = $('input[name=country_code]').val();
+
+            if (phone === "") {
+                AIZ.plugins.notify('danger', '{{ translate('Please enter phone number') }}');
+                return;
+            }
+
+            $('.submit-button').prop('disabled', true).html('{{ translate('Sending OTP...') }}');
+
+            // Check Recaptcha
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                    'size': 'invisible'
+                });
+            }
+
+            var phoneNumber = "+" + countryCode + phone;
+
+            firebase.auth().signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier)
+                .then(function (confirmationResult) {
+                    window.confirmationResult = confirmationResult;
+
+                    AIZ.plugins.notify('success', '{{ translate('OTP Sent!') }}');
+
+                    $('.otp-form-group').removeClass('d-none');
+                    $('.submit-button').html('{{ translate('Login') }}').attr('onclick', 'verifyOtp()').prop('disabled', false);
+
+                }).catch(function (error) {
+                    $('.submit-button').prop('disabled', false).html('{{ translate('Get OTP') }}');
+                    AIZ.plugins.notify('danger', error.message);
+                    console.error(error);
+                    if (window.recaptchaVerifier) {
+                        window.recaptchaVerifier.clear();
+                        window.recaptchaVerifier = null;
+                    }
+                });
+
+        } else {
+            // EMAIL OTP (Backend)
+            var email = $('#email').val();
+            if (email === "") {
+                AIZ.plugins.notify('danger', '{{ translate('Please enter email address') }}');
+                return;
+            }
+
+            $('.submit-button').prop('disabled', true).html('{{ translate('Sending OTP...') }}');
+
+            $.ajax({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                url: '{{ route('send-otp') }}',
+                type: 'POST',
+                data: {
+                    phone: email // We send email in 'phone' field as per controller logic
+                },
+                success: function (data) {
+                    if (data.result) {
+                        AIZ.plugins.notify('success', data.message);
+                        $('.otp-form-group').removeClass('d-none');
+                        $('.submit-button').html('{{ translate('Login') }}').attr('onclick', 'verifyOtp()').prop('disabled', false);
+                    } else {
+                        AIZ.plugins.notify('danger', data.message);
+                        $('.submit-button').prop('disabled', false).html('{{ translate('Get OTP') }}');
+                    }
+                },
+                error: function () {
+                    AIZ.plugins.notify('danger', '{{ translate('Something went wrong') }}');
+                    $('.submit-button').prop('disabled', false).html('{{ translate('Get OTP') }}');
+                }
+            });
+        }
+    }
+
+    function verifyOtp() {
+        var code = $('#otp_code').val();
+        if (code === "") {
+            AIZ.plugins.notify('danger', '{{ translate('Please enter OTP') }}');
+            return;
+        }
+
+        $('.submit-button').prop('disabled', true).html('{{ translate('Verifying...') }}');
+
+        if (isPhoneShown) {
+            // PHONE VERIFY (Firebase)
+            window.confirmationResult.confirm(code).then(function (result) {
+                var user = result.user;
+                user.getIdToken().then(function (idToken) {
+                    $('#firebase_id_token').val(idToken);
+                    $('#firebase_verified_phone').val(user.phoneNumber);
+
+                    $('.submit-button').prop('type', 'submit').removeAttr('onclick');
+                    $('.loginForm').submit();
+                });
+
+            }).catch(function (error) {
+                $('.submit-button').prop('disabled', false).html('{{ translate('Login') }}');
+                AIZ.plugins.notify('danger', '{{ translate('Invalid OTP') }}');
+            });
+        } else {
+            // EMAIL VERIFY (Backend)
+            var email = $('#email').val();
+            $.ajax({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                url: '{{ route('validate-otp-code') }}',
+                type: 'POST',
+                data: {
+                    phone: email,
+                    otp_code: code
+                },
+                success: function (data) {
+                    if (data.result) {
+                        AIZ.plugins.notify('success', data.message);
+                        window.location.href = data.redirect;
+                    } else {
+                        AIZ.plugins.notify('danger', data.message);
+                        $('.submit-button').prop('disabled', false).html('{{ translate('Login') }}');
+                    }
+                },
+                error: function () {
+                    AIZ.plugins.notify('danger', '{{ translate('Something went wrong') }}');
+                    $('.submit-button').prop('disabled', false).html('{{ translate('Login') }}');
+                }
+            });
+        }
+    }
+</script>
 
 <script>
     window.authPhoneOtpEnabled = {{ get_setting('auth_phone_otp_enabled', 1) == 1 ? 'true' : 'false' }};
     window.firebaseWebConfig = @json(config('firebase.web'));
-</script>
-
-<script>
-    function showError(input, message) {
-        const formGroup = input.closest('.form-group');
-        $(formGroup).find('.invalid-feedback').remove(); 
-        $(input).removeClass('is-valid').addClass('is-invalid');
-        $(formGroup).append(`<div class="invalid-feedback d-block text-left">${message}</div>`);
-    }
-
-
-    document.addEventListener("input", function(e) {
-        const input = e.target;
-        if (input.hasAttribute("phone-number")) {
-            const formGroup = input.closest('.form-group');
-            const original = input.value;
-            const numeric = original.replace(/[^0-9]/g, "");
-
-            // Update input
-            input.value = numeric;
-            // Remove old errors
-            $(formGroup).find('.invalid-feedback').remove();
-            $(input).removeClass('is-invalid');
-
-            // Show error if original != numeric
-            if (original !== numeric) {
-                $(input).addClass('is-invalid');
-                $(formGroup).append(`<div class="invalid-feedback d-block text-left">
-                    {{ translate('Please enter a valid phone number format') }}
-                </div>`);
-            }
-        }
-    });
-
 </script>

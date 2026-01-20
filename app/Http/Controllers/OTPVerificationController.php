@@ -16,11 +16,11 @@ class OTPVerificationController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function verification(Request $request){
+    public function verification(Request $request)
+    {
         if (Auth::check() && Auth::user()->email_verified_at == null) {
-            return view('otp_systems.frontend.auth.'.get_setting('authentication_layout_select').'.user_verification');
-        }
-        else {
+            return view('otp_systems.frontend.auth.' . get_setting('authentication_layout_select') . '.user_verification');
+        } else {
             flash('You have already verified your number')->warning();
             return redirect()->route('home');
         }
@@ -33,7 +33,8 @@ class OTPVerificationController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-    public function verify_phone(Request $request){
+    public function verify_phone(Request $request)
+    {
         $user = Auth::user();
         if ($user->verification_code == $request->verification_code) {
             $user->email_verified_at = date('Y-m-d h:m:s');
@@ -41,8 +42,7 @@ class OTPVerificationController extends Controller
             offerUserWelcomeCoupon();
             flash('Your phone number has been verified successfully')->success();
             return redirect()->route('home');
-        }
-        else{
+        } else {
             flash('Invalid Code')->error();
             return back();
         }
@@ -54,9 +54,10 @@ class OTPVerificationController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-    public function resend_verificcation_code(Request $request){
+    public function resend_verificcation_code(Request $request)
+    {
         $user = Auth::user();
-        $user->verification_code = rand(100000,999999);
+        $user->verification_code = rand(100000, 999999);
         $user->save();
         SmsUtility::phone_number_verification($user);
 
@@ -73,7 +74,7 @@ class OTPVerificationController extends Controller
     public function reset_password_with_code(Request $request)
     {
         $phone = "+{$request['country_code']}{$request['phone']}";
-        
+
         if (($user = User::where('phone', $phone)->where('verification_code', $request->code)->first()) != null) {
             if ($request->password == $request->password_confirmation) {
                 $user->password = Hash::make($request->password);
@@ -90,23 +91,24 @@ class OTPVerificationController extends Controller
                 return redirect()->route('home');
             } else {
                 flash("Password and confirm password didn't match")->warning();
-                $country_code= $request['country_code'];
-                return view('otp_systems.frontend.auth.'.get_setting('authentication_layout_select').'.reset_with_phone', compact('phone','country_code'));
+                $country_code = $request['country_code'];
+                return view('otp_systems.frontend.auth.' . get_setting('authentication_layout_select') . '.reset_with_phone', compact('phone', 'country_code'));
             }
         } else {
             flash("Verification code mismatch")->error();
-            $country_code= $request['country_code'];
-            return view('otp_systems.frontend.auth.'.get_setting('authentication_layout_select').'.reset_with_phone', compact('phone','country_code'));
+            $country_code = $request['country_code'];
+            return view('otp_systems.frontend.auth.' . get_setting('authentication_layout_select') . '.reset_with_phone', compact('phone', 'country_code'));
         }
     }
 
-  
+
     /**
      * @param  User $user
      * @return void
      */
 
-    public function send_code($user){
+    public function send_code($user)
+    {
         SmsUtility::phone_number_verification($user);
     }
 
@@ -114,9 +116,10 @@ class OTPVerificationController extends Controller
      * @param  Order $order
      * @return void
      */
-    public function send_order_code($order){
+    public function send_order_code($order)
+    {
         $phone = json_decode($order->shipping_address)->phone;
-        if($phone != null){
+        if ($phone != null) {
             SmsUtility::order_placement($phone, $order);
         }
     }
@@ -125,9 +128,10 @@ class OTPVerificationController extends Controller
      * @param  Order $order
      * @return void
      */
-    public function send_delivery_status($order){
+    public function send_delivery_status($order)
+    {
         $phone = json_decode($order->shipping_address)->phone;
-        if($phone != null){
+        if ($phone != null) {
             SmsUtility::delivery_status_change($phone, $order);
         }
     }
@@ -136,85 +140,152 @@ class OTPVerificationController extends Controller
      * @param  Order $order
      * @return void
      */
-    public function send_payment_status($order){
+    public function send_payment_status($order)
+    {
         $phone = json_decode($order->shipping_address)->phone;
-        if($phone != null){
+        if ($phone != null) {
             SmsUtility::payment_status_change($phone, $order);
         }
     }
 
-    public function account_opening($user, $password){
-        if($user->phone != null){
+    public function account_opening($user, $password)
+    {
+        if ($user->phone != null) {
             SmsUtility::account_opening($user, $password);
         }
     }
 
-    public function sendOtp(Request $request){
-        $phone = '+'.$request->country_code.$request->phone;
+    public function sendOtp(Request $request)
+    {
+        if (filter_var($request->phone, FILTER_VALIDATE_EMAIL)) {
+            $email = $request->phone; // Field name is phone but contains email
+            return $this->handleEmailOtpSending($email);
+        }
+
+        $phone = '+' . $request->country_code . $request->phone;
         return $this->handleOtpSending($phone);
     }
 
-    public function resendOtp($phone){
+    public function handleEmailOtpSending($email)
+    {
+        $user = User::where('email', $email)->first();
+        if ($user != null) {
+            // Check for cooldown (optional, reusing similar logic to phone)
+            if ($user->otp_code != null && $user->otp_sent_time != null) {
+                $resendWaitTime = 60; // 60 seconds for email
+                $elapsedTime = strtotime(date("Y-m-d H:i:s")) - strtotime($user->otp_sent_time);
+                $resendOtpTimeLeft = max($resendWaitTime - $elapsedTime, 0);
+                if ($resendOtpTimeLeft > 0) {
+                    return response()->json(['result' => false, 'message' => translate('Please wait') . ' ' . ($resendOtpTimeLeft) . ' ' . translate('seconds before trying again.')]);
+                }
+            }
+
+            $user->otp_code = rand(100000, 999999);
+            $user->otp_sent_time = date("Y-m-d H:i:s");
+            $user->save();
+
+            // Send Email
+            try {
+                \Mail::send('emails.otp', ['code' => $user->otp_code, 'user' => $user], function ($m) use ($user) {
+                    $m->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+                    $m->to($user->email, $user->name)->subject('Login OTP');
+                });
+            } catch (\Exception $e) {
+                return response()->json(['result' => false, 'message' => translate('Failed to send email. Please try again later.')]);
+            }
+
+            return response()->json(['result' => true, 'message' => translate('OTP sent to your email!')]);
+        } else {
+            return response()->json(['result' => false, 'message' => translate('No account exists with this email.')]);
+        }
+    }
+
+    public function resendOtp($phone)
+    {
+        // Ensure this works for both or handle separately if route differs
+        // For now, assuming this is only called for phone in legacy flow. 
+        // We will focus on the new flow.
         return $this->handleOtpSending($phone);
     }
 
-    public function handleOtpSending($phone){
+    public function handleOtpSending($phone)
+    {
         $user = User::where('phone', $phone)->first();
         if ($user != null) {
-            
-            if($user->otp_code != null && $user->otp_sent_time != null){
+
+            if ($user->otp_code != null && $user->otp_sent_time != null) {
                 $resendWaitTime = 180;
-                $elapsedTime = strtotime(date("Y-m-d H:i:s")) -  strtotime($user->otp_sent_time);
+                $elapsedTime = strtotime(date("Y-m-d H:i:s")) - strtotime($user->otp_sent_time);
                 $resendOtpTimeLeft = max($resendWaitTime - $elapsedTime, 0);
-                if($resendOtpTimeLeft > 0){
-                    flash(translate('Please wait').' '.($resendOtpTimeLeft-1).' '.('seconds before trying again.'))->error();
+                if ($resendOtpTimeLeft > 0) {
+                    flash(translate('Please wait') . ' ' . ($resendOtpTimeLeft - 1) . ' ' . ('seconds before trying again.'))->error();
                     return back();
                 }
             }
 
-            $user->otp_code = rand(100000,999999);
+            $user->otp_code = rand(100000, 999999);
             $user->otp_sent_time = date("Y-m-d H:i:s");
             $user->save();
             SmsUtility::loginWithOtp($user);
             return redirect()->route('otp-verification-page', ['user_id' => encrypt($user->id)]);
-        }
-        else {
+        } else {
             flash(translate('No account exists with this phone number'))->error();
             return back();
         }
     }
-    public function otpVerificationPage(Request $request){
+    public function otpVerificationPage(Request $request)
+    {
         $user = User::where('id', decrypt($request->user_id))->first();
         $phone = $user->phone;
 
         $resendWaitTime = 180;
-        $elapsedTime = strtotime(date("Y-m-d H:i:s")) -  strtotime($user->otp_sent_time);
+        $elapsedTime = strtotime(date("Y-m-d H:i:s")) - strtotime($user->otp_sent_time);
         $resendOtpTimeLeft = max($resendWaitTime - $elapsedTime, 0);
 
-        return view('otp_systems.frontend.auth.'.get_setting('authentication_layout_select').'.otp_verification', compact('phone', 'resendOtpTimeLeft'));
+        return view('otp_systems.frontend.auth.' . get_setting('authentication_layout_select') . '.otp_verification', compact('phone', 'resendOtpTimeLeft'));
     }
-    
-    public function validateOtpCode(Request $request){
-        $user = User::wherePhone($request->phone)->whereOtpCode($request->otp_code)->first();
-        if($user != null){
 
-            $otpValidityDuration  = 300;
-            $elapsedTime = strtotime(date("Y-m-d H:i:s")) -  strtotime($user->otp_sent_time);
+    public function validateOtpCode(Request $request)
+    {
+        // Determine if input is phone or email
+        if (filter_var($request->phone, FILTER_VALIDATE_EMAIL)) {
+            $user = User::where('email', $request->phone)->where('otp_code', $request->otp_code)->first();
+        } else {
+            // For phone, we might receive country code separated or combined. 
+            // The old logic expected 'phone' and 'otp_code'.
+            // If this is coming from our new JS, the 'phone' field might contain the full number.
+            $user = User::where('phone', $request->phone)->where('otp_code', $request->otp_code)->first();
+        }
+
+        if ($user != null) {
+
+            $otpValidityDuration = 300;
+            $elapsedTime = strtotime(date("Y-m-d H:i:s")) - strtotime($user->otp_sent_time);
             $otpValidityPeriodLeft = max($otpValidityDuration - $elapsedTime, 0);
-            if($otpValidityPeriodLeft < 1){
+            if ($otpValidityPeriodLeft < 1) {
                 flash(translate('Your OTP code has expired. Please request a new one.'))->error();
+                if ($request->ajax()) {
+                    return response()->json(['result' => false, 'message' => translate('Your OTP code has expired. Please request a new one.')]);
+                }
                 return back();
             }
 
-            $user->otp_code = null; 
+            $user->otp_code = null;
             $user->otp_sent_time = null;
-            
+
             $user->save();
             auth()->login($user, true);
+
+            if ($request->ajax()) {
+                return response()->json(['result' => true, 'message' => translate('Logged in successfully'), 'redirect' => route('home')]);
+            }
+
             flash("Logged in successfully")->success();
             return redirect()->route('home');
-        }
-        else{
+        } else {
+            if ($request->ajax()) {
+                return response()->json(['result' => false, 'message' => translate('OTP does not match')]);
+            }
             flash("OTP do not matched")->error();
             return back();
         }
