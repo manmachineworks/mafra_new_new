@@ -73,13 +73,53 @@ class OTPVerificationController extends Controller
 
     public function reset_password_with_code(Request $request)
     {
-        $phone = "+{$request['country_code']}{$request['phone']}";
+        $user = null;
 
-        if (($user = User::where('phone', $phone)->where('verification_code', $request->code)->first()) != null) {
+        // 1. Firebase Verification (Priority)
+        if ($request->filled('firebase_id_token')) {
+            try {
+                $verifier = app(\App\Services\FirebaseTokenVerifier::class);
+                $verified = $verifier->verify($request->firebase_id_token);
+                $phone = $verified['phone']; // Trusted phone from Firebase
+
+                // Flexible Lookup
+                $user = User::where('phone', $phone)->first();
+                if (!$user) {
+                    $phoneNoPlus = str_replace('+', '', $phone);
+                    $user = User::where('phone', $phoneNoPlus)->first();
+                }
+                if (!$user && strlen($phone) > 10) {
+                    $last10 = substr($phone, -10);
+                    $user = User::where('phone', $last10)->first();
+                }
+
+            } catch (\Exception $e) {
+                flash(translate('Invalid Firebase Token or Verification Failed'))->error();
+                return back();
+            }
+        }
+        // 2. Standard Code Verification (Fallback)
+        else {
+            $phone = "+{$request['country_code']}{$request['phone']}";
+            // Flexible lookup combined with code check
+            $user = User::where('phone', $phone)->where('verification_code', $request->code)->first();
+
+            if (!$user) {
+                // Try without plus
+                $phoneNoPlus = $request['phone']; // Assuming input was raw
+                // Reconstruct roughly or just try loose matching if possible. 
+                // But sticking to strict for legacy code flow is safer unless requested.
+                // let's stick to the original strict lookup for code flow to avoid security issues with 6-digit brute force on wrong number.
+            }
+        }
+
+        if ($user != null) {
             if ($request->password == $request->password_confirmation) {
                 $user->password = Hash::make($request->password);
-                $user->email_verified_at = date('Y-m-d h:m:s');
+                $user->email_verified_at = date('Y-m-d H:i:s');
+                $user->verification_code = null; // Clear code
                 $user->save();
+
                 event(new PasswordReset($user));
                 auth()->login($user, true);
 
@@ -91,13 +131,11 @@ class OTPVerificationController extends Controller
                 return redirect()->route('home');
             } else {
                 flash("Password and confirm password didn't match")->warning();
-                $country_code = $request['country_code'];
-                return view('otp_systems.frontend.auth.' . get_setting('authentication_layout_select') . '.reset_with_phone', compact('phone', 'country_code'));
+                return back()->withInput();
             }
         } else {
-            flash("Verification code mismatch")->error();
-            $country_code = $request['country_code'];
-            return view('otp_systems.frontend.auth.' . get_setting('authentication_layout_select') . '.reset_with_phone', compact('phone', 'country_code'));
+            flash("Verification failed (Invalid Code or Phone)")->error();
+            return back()->withInput();
         }
     }
 

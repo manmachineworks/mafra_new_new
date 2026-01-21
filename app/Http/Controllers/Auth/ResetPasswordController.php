@@ -22,6 +22,20 @@ class ResetPasswordController extends Controller
     use ResetsPasswords;
 
     /**
+     * Display the password reset view for the given token.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string|null  $token
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showResetForm(Request $request, $token = null)
+    {
+        return view('auth.' . get_setting('authentication_layout_select') . '.reset_password')->with(
+            ['token' => $token, 'email' => $request->email]
+        );
+    }
+
+    /**
      * Where to redirect users after resetting their password.
      *
      * @var string
@@ -47,13 +61,12 @@ class ResetPasswordController extends Controller
      */
     protected function sendResetResponse(Request $request, $response)
     {
-        if(auth()->user()->user_type == 'admin' || auth()->user()->user_type == 'staff')
-        {
+        if (auth()->user()->user_type == 'admin' || auth()->user()->user_type == 'staff') {
             return redirect()->route('admin.dashboard')
-                            ->with('status', trans($response));
+                ->with('status', trans($response));
         }
 
         return redirect()->route('home')
-                            ->with('status', trans($response));
+            ->with('status', trans($response));
     }
 }

@@ -215,22 +215,30 @@
 
         function switchLoginMode(mode) {
             isOtpMode = (mode === 'otp');
-            
+
             // Tab styling
             if (isOtpMode) {
                 $('#tab-password').removeClass('border-primary border-width-2 text-primary').addClass('text-muted');
                 $('#tab-otp').addClass('border-primary border-width-2 text-primary').removeClass('text-muted');
-                
-                // Hide Password Logic
+
+                // Hide Password Logic but KEEP toggle
                 $('.password-login-block').addClass('d-none');
-                $('.email-form-group').addClass('d-none');
-                
-                // Show Phone Input (Force Phone)
-                $('.phone-form-group').removeClass('d-none');
-                $('#btn-use-phone').addClass('active');
-                $('#btn-use-email').removeClass('active').addClass('d-none'); // Hide email toggle in OTP mode
+
+                // Show currently selected input (Phone or Email)
+                // We default to Phone if switching to OTP for the first time? 
+                // Let's just respect the current toggle state or default to phone.
+                if ($('#btn-use-email').hasClass('active')) {
+                    $('.email-form-group').removeClass('d-none');
+                    $('.phone-form-group').addClass('d-none');
+                } else {
+                    $('.phone-form-group').removeClass('d-none');
+                    $('.email-form-group').addClass('d-none');
+                    $('#btn-use-phone').addClass('active'); // Default
+                }
+
+                $('#btn-use-email').removeClass('d-none'); // Allow email in OTP mode now
                 $('#btn-use-phone').removeClass('d-none');
-                
+
                 // Update Button Text
                 $('.submit-button').text("{{ translate('Get OTP') }}");
                 $('.submit-button').attr('type', 'button');
@@ -238,15 +246,22 @@
             } else {
                 $('#tab-otp').removeClass('border-primary border-width-2 text-primary').addClass('text-muted');
                 $('#tab-password').addClass('border-primary border-width-2 text-primary').removeClass('text-muted');
-                
+
                 // Show Password Logic
                 $('.password-login-block').removeClass('d-none');
                 $('.otp-form-group').addClass('d-none');
-                
-                // Reset Toggle
+
+                // Reset Toggle logic
                 $('#btn-use-email').removeClass('d-none');
-                toggleEmailPhone('phone'); // Default back to phone but allow email
-                
+
+                if ($('#btn-use-email').hasClass('active')) {
+                    $('.email-form-group').removeClass('d-none');
+                    $('.phone-form-group').addClass('d-none');
+                } else {
+                    $('.phone-form-group').removeClass('d-none');
+                    $('.email-form-group').addClass('d-none');
+                }
+
                 // Reset Button
                 $('.submit-button').text("{{ translate('Login') }}");
                 $('.submit-button').attr('type', 'submit');
@@ -255,8 +270,9 @@
         }
 
         function toggleEmailPhone(type) {
-            if (isOtpMode) return; // Disable toggle in OTP mode
+            // REMOVED: if (isOtpMode) return;  <-- We allow toggle now
 
+            // Just simple UI switching
             if (type === 'phone') {
                 $('.phone-form-group').removeClass('d-none');
                 $('.email-form-group').addClass('d-none');
@@ -271,7 +287,10 @@
         }
 
         function handleOtpFlow() {
-            if (!confirmationResult) {
+            // Check if we already have the OTP input visible (e.g. sent)
+            // But for Email, 'confirmationResult' is null.
+            // We need a flag or check if OTP field is visible.
+            if ($('.otp-form-group').hasClass('d-none')) {
                 sendOTP();
             } else {
                 verifyOTP();
@@ -279,62 +298,126 @@
         }
 
         function sendOTP() {
-            const phoneNumber = "+{{ $country_code ?? '91' }}" + $('#phone-code').val(); // Adjust country code logic as needed
-            // Currently hardcoding country code prefix if not in input
-            // Better to use the hidden country_code input if populated, or assume user enters full number
-            // Let's grab the country code from the hidden input if available, else default
-            
-            // IMPORTANT: If 'phone-code' has the full number, use it. 
-            // The template suggests `name="country_code"` exists line 68. 
-            // Assuming the input `phone-code` is just the number.
-            
-            const fullPhoneNumber = "+" + ($('input[name=country_code]').val() || '91') + $('#phone-code').val();
+            const isEmail = $('#btn-use-email').hasClass('active');
 
-            $('.submit-button').prop('disabled', true).text("{{ translate('Sending...') }}");
+            if (isEmail) {
+                // --- EMAIL OTP FLOW ---
+                const email = $('#email').val();
+                if (!email) {
+                    AIZ.plugins.notify('warning', "{{ translate('Please enter your email') }}");
+                    return;
+                }
 
-            auth.signInWithPhoneNumber(fullPhoneNumber, window.recaptchaVerifier)
-                .then((result) => {
-                    confirmationResult = result;
-                    $('.otp-form-group').removeClass('d-none');
-                    $('.phone-form-group').addClass('d-none'); // Hide phone input to prevent editing
-                    $('.submit-button').text("{{ translate('Verify & Login') }}");
-                    $('.submit-button').prop('disabled', false);
-                    AIZ.plugins.notify('success', "{{ translate('OTP Sent Successfully') }}");
-                }).catch((error) => {
-                    console.error("Error during signInWithPhoneNumber", error);
-                    $('.submit-button').prop('disabled', false).text("{{ translate('Get OTP') }}");
-                    window.recaptchaVerifier.render().then(function(widgetId) {
-                        grecaptcha.reset(widgetId);
-                    });
-                    AIZ.plugins.notify('danger', error.message);
+                $('.submit-button').prop('disabled', true).text("{{ translate('Sending...') }}");
+
+                $.ajax({
+                    type: "POST",
+                    url: "{{ route('auth.login.otp.send') }}",
+                    data: {
+                        phone: email, // Controller expects 'phone' param even for email
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function (response) {
+                        $('.submit-button').prop('disabled', false).text("{{ translate('Verify & Login') }}");
+                        if (response.result) {
+                            $('.otp-form-group').removeClass('d-none');
+                            $('.email-form-group').addClass('d-none'); // Hide input
+                            AIZ.plugins.notify('success', response.message);
+                        } else {
+                            $('.submit-button').text("{{ translate('Get OTP') }}");
+                            AIZ.plugins.notify('warning', response.message);
+                        }
+                    },
+                    error: function (err) {
+                        $('.submit-button').prop('disabled', false).text("{{ translate('Get OTP') }}");
+                        AIZ.plugins.notify('danger', "{{ translate('Something went wrong') }}");
+                        console.error(err);
+                    }
                 });
+
+            } else {
+                // --- PHONE OTP FLOW (Firebase) ---
+                const phoneNumber = "+{{ $country_code ?? '91' }}" + $('#phone-code').val();
+                const fullPhoneNumber = "+" + ($('input[name=country_code]').val() || '91') + $('#phone-code').val();
+
+                $('.submit-button').prop('disabled', true).text("{{ translate('Sending...') }}");
+
+                auth.signInWithPhoneNumber(fullPhoneNumber, window.recaptchaVerifier)
+                    .then((result) => {
+                        confirmationResult = result;
+                        $('.otp-form-group').removeClass('d-none');
+                        $('.phone-form-group').addClass('d-none');
+                        $('.submit-button').text("{{ translate('Verify & Login') }}");
+                        $('.submit-button').prop('disabled', false);
+                        AIZ.plugins.notify('success', "{{ translate('OTP Sent Successfully') }}");
+                    }).catch((error) => {
+                        console.error("Error during signInWithPhoneNumber", error);
+                        $('.submit-button').prop('disabled', false).text("{{ translate('Get OTP') }}");
+                        window.recaptchaVerifier.render().then(function (widgetId) {
+                            grecaptcha.reset(widgetId);
+                        });
+                        AIZ.plugins.notify('danger', error.message);
+                    });
+            }
         }
 
         function verifyOTP() {
             const code = $('#otp_code').val();
             if (!code) {
-                 AIZ.plugins.notify('warning', "{{ translate('Please enter the OTP') }}");
-                 return;
+                AIZ.plugins.notify('warning', "{{ translate('Please enter the OTP') }}");
+                return;
             }
-
             $('.submit-button').prop('disabled', true).text("{{ translate('Verifying...') }}");
 
-            confirmationResult.confirm(code).then((result) => {
-                const user = result.user;
-                user.getIdToken().then((idToken) => {
-                    $('#firebase_id_token').val(idToken);
-                    $('#firebase_verified_phone').val(user.phoneNumber);
-                    
-                    // Submit the form properly
-                    // We need to switch button type back to submit or trigger submit()
-                    // But since we are inside a button click handler, let's just submit the form object
-                    document.getElementById('user-login-form').submit();
+            const isEmail = $('#btn-use-email').hasClass('active');
+
+            if (isEmail) {
+                // --- EMAIL VERIFY FLOW ---
+                const email = $('#email').val();
+                $.ajax({
+                    type: "POST",
+                    url: "{{ route('auth.login.otp.verify') }}",
+                    data: {
+                        phone: email,
+                        otp_code: code,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function (response) {
+                        if (response.result) {
+                            AIZ.plugins.notify('success', response.message);
+                            window.location.href = response.redirect;
+                        } else {
+                            $('.submit-button').prop('disabled', false).text("{{ translate('Verify & Login') }}");
+                            AIZ.plugins.notify('danger', response.message);
+                        }
+                    },
+                    error: function (err) {
+                        $('.submit-button').prop('disabled', false).text("{{ translate('Verify & Login') }}");
+                        AIZ.plugins.notify('danger', "{{ translate('Verification failed') }}");
+                    }
                 });
-            }).catch((error) => {
-                console.error("Error during confirm", error);
-                $('.submit-button').prop('disabled', false).text("{{ translate('Verify & Login') }}");
-                AIZ.plugins.notify('danger', "{{ translate('Invalid OTP') }}");
-            });
+
+            } else {
+                // --- PHONE VERIFY FLOW (Firebase) ---
+                confirmationResult.confirm(code).then((result) => {
+                    const user = result.user;
+                    user.getIdToken().then((idToken) => {
+                        $('#firebase_id_token').val(idToken);
+                        $('#firebase_verified_phone').val(user.phoneNumber);
+
+                        const phoneNumber = user.phoneNumber;
+                        const phoneWithoutPlus = phoneNumber.replace('+', '');
+                        const last10 = phoneWithoutPlus.slice(-10);
+                        $('#phone-code').val(last10);
+
+                        document.getElementById('user-login-form').submit();
+                    });
+                }).catch((error) => {
+                    console.error("Error during confirm", error);
+                    $('.submit-button').prop('disabled', false).text("{{ translate('Verify & Login') }}");
+                    AIZ.plugins.notify('danger', "{{ translate('Invalid OTP') }}");
+                });
+            }
         }
 
         // Auto-fill for demo (optional, keeping existing logic)
@@ -344,12 +427,12 @@
         }
 
 
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Default setup
             switchLoginMode('password');
-            
+
             // If country code script isn't loaded, maybe hardcode '91' logic or rely on user
-             $('input[name=country_code]').val('91'); // Default fallback
+            $('input[name=country_code]').val('91'); // Default fallback
         });
     </script>
 
@@ -366,8 +449,8 @@
 
                 // If in OTP mode but not verified yet, prevent default (this shouldn't happen via submit button as it is type=button)
                 if (isOtpMode && $('#firebase_verified_phone').val() === '') {
-                     e.preventDefault();
-                     return;
+                    e.preventDefault();
+                    return;
                 }
 
                 if (!this.checkValidity()) {

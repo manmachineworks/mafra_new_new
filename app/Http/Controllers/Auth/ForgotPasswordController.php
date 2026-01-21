@@ -50,7 +50,21 @@ class ForgotPasswordController extends Controller
      */
     public function sendResetLinkEmail(Request $request)
     {
-        $this->syncFirebaseVerification($request);
+        \Log::info('sendResetLinkEmail called', $request->all());
+
+        try {
+            $this->syncFirebaseVerification($request);
+        } catch (\Exception $e) {
+            \Log::error('syncFirebaseVerification failed: ' . $e->getMessage());
+            // If it is a validation exception, we should probably let it throw or handle it.
+            // But if the frontend sends no token (just phone), and we require one, this throws.
+            // If we want to fallback to system OTP, we could ignore it here?
+            if ($e instanceof \Illuminate\Validation\ValidationException) {
+                // For diagnosis, we log it.
+                \Log::warning('ValidationException in Firebase sync. Proceeding or Throwing?', ['errors' => $e->errors()]);
+                throw $e;
+            }
+        }
 
         // validate recaptcha
         $request->validate([
@@ -58,15 +72,18 @@ class ForgotPasswordController extends Controller
                 Rule::when(get_setting('google_recaptcha') == 1 && get_setting('recaptcha_forgot_password') == 1, ['required', new Recaptcha()], ['sometimes'])
             ],
         ]);
-        
+
         $verifiedPhone = $request->input('firebase_verified_phone');
         $phone = $verifiedPhone ?: "+{$request['country_code']}{$request['phone']}";
+
+        \Log::info('sendResetLinkEmail phone determined', ['phone' => $phone]);
+
         if (filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
             $user = User::where('email', $request->email)->first();
             if ($user != null) {
-                $user->verification_code = rand(100000,999999);
+                $user->verification_code = rand(100000, 999999);
                 $user->save();
-                
+
                 $emailTemplate = EmailTemplate::whereIdentifier('password_reset_email_to_all')->first();
                 $emailSubject = $emailTemplate->subject;
                 $emailSubject = str_replace('[[store_name]]', get_setting('site_name'), $emailSubject);
@@ -75,27 +92,54 @@ class ForgotPasswordController extends Controller
                 $email_body = str_replace('[[user_email]]', $user->email, $email_body);
                 $email_body = str_replace('[[code]]', $user->verification_code, $email_body);
                 $email_body = str_replace('[[store_name]]', get_setting('site_name'), $email_body);
-                
+
                 $array['subject'] = $emailSubject;
                 $array['content'] = $email_body;
                 Mail::to($user->email)->queue(new MailManager($array));
 
-                return view('auth.'.get_setting('authentication_layout_select').'.reset_password');
-            }
-            else {
+                return view('auth.' . get_setting('authentication_layout_select') . '.reset_password');
+            } else {
                 flash(translate('No account exists with this email'))->error();
                 return back();
             }
-        }
-        else{
+        } else {
             $user = User::where('phone', $phone)->first();
-            if ($user != null) {
-                $user->verification_code = rand(100000,999999);
-                $user->save();
-                SmsUtility::password_reset($user);
-                return view('otp_systems.frontend.auth.'.get_setting('authentication_layout_select').'.reset_with_phone');
+
+            // Flexible Phone Matching (Same as LoginController)
+            if (!$user) {
+                // Try removing '+'
+                $phoneNoPlus = str_replace('+', '', $phone);
+                $user = User::where('phone', $phoneNoPlus)->first();
             }
-            else {
+            if (!$user) {
+                // Try last 10 digits
+                $last10 = substr($phone, -10);
+                $user = User::where('phone', $last10)->first();
+            }
+
+            if ($user != null) {
+                $user->verification_code = rand(100000, 999999);
+                $user->save();
+
+                // Note: We don't always need to send SMS if Firebase was used, 
+                // but strictly speaking, the backend "Reset" flow expects a code.
+                // If the user came via Firebase, they are verified. 
+                // We pass the code to the view to auto-fill it.
+                $auto_code = $user->verification_code;
+
+                if (!$verifiedPhone) {
+                    // Only send SMS if they didn't verify via Firebase (fallback) 
+                    // OR should we send it anyway for record? 
+                    // If firebase was used, we trust them.
+                    SmsUtility::password_reset($user);
+                }
+
+                return view('otp_systems.frontend.auth.' . get_setting('authentication_layout_select') . '.reset_with_phone', [
+                    'code' => $auto_code,
+                    'phone' => $user->phone
+                ]);
+            } else {
+                \Log::warning('No user found with phone', ['phone' => $phone]);
                 flash(translate('No account exists with this phone number'))->error();
                 return back();
             }

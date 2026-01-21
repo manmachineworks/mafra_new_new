@@ -45,11 +45,12 @@
                                             
                                             <!-- Code -->
                                             <div class="form-group">
-                                                <input id="email" type="text" class="form-control{{ $errors->has('email') ? ' is-invalid' : '' }}" name="code" value="{{ $email ?? old('email') }}" placeholder="Code" required autofocus>
+                                                <label class="form-label">{{ translate('Verification Code') }}</label>
+                                                <input id="code" type="text" class="form-control{{ $errors->has('code') ? ' is-invalid' : '' }}" name="code" value="{{ $code ?? old('code') }}" placeholder="{{ translate('Code') }}" required autofocus>
             
-                                                @if ($errors->has('email'))
+                                                @if ($errors->has('code'))
                                                     <span class="invalid-feedback" role="alert">
-                                                        <strong>{{ $errors->first('email') }}</strong>
+                                                        <strong>{{ $errors->first('code') }}</strong>
                                                     </span>
                                                 @endif
                                             </div>

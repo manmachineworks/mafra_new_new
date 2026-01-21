@@ -240,12 +240,21 @@ class LoginController extends Controller
     {
         $this->syncFirebaseVerification($request);
 
+        \Log::info('ValidateLogin - After Firebase Sync', [
+            'has_firebase_verified_phone' => $request->filled('firebase_verified_phone'),
+            'has_phone' => $request->filled('phone'),
+            'has_email' => $request->filled('email'),
+            'firebase_verified_phone' => $request->input('firebase_verified_phone'),
+            'phone' => $request->input('phone'),
+        ]);
+
         // If Firebase Verified, skip password and recaptcha validation
         if ($request->filled('firebase_verified_phone')) {
             $request->validate([
                 'email' => 'required_without:phone',
                 'phone' => 'required_without:email',
             ]);
+            \Log::info('ValidateLogin - Firebase validation passed');
             return;
         }
 
